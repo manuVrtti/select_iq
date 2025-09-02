@@ -1,0 +1,1 @@
+{"web":{"client_id":"1091910545778-l6hjem5gmc4f16depv5l8q682cuccka6.apps.googleusercontent.com","project_id":"smart-iq-3103","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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"}}
