@@ -1,16 +1,34 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import InterviewHeader from "../_components/InterviewHeader";
 import Image from "next/image";
 import { Clock, Info, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
+import { supabase } from "@/services/supabaseClient";
 
 function Interview() {
 
   const {interview_id}=useParams();
   console.log(interview_id)
+  const [interviewData,setInterviewData]=useState();
+  useEffect(()=>{
+    interview_id && GetInterviewDetails();
+  }, [interview_id])
+
+  useEffect(()=>{
+    interview_id&&GetInterviewDetails();
+  },[interview_id])
+
+  const GetInterviewDetails= async()=>{
+    let { data: Interviews, error } = await supabase
+        .from('Interviews')
+        .select("jobPosition,jobDescription,duration,type")
+        .eq('interview_id',interview_id)
+    setInterviewData(Interviews[0]);
+    // console.log(Interviews);
+  }
 
   return (
     <div className="px-10 md:px-28 lg:px-48 xl:px-80 mt-7 ">
@@ -35,9 +53,9 @@ function Interview() {
         />
 
         {/* Interview Title */}
-        <h2 className="font-bold text-xl">Full Stack Developer Interview</h2>
+        <h2 className="font-bold text-xl"> {interviewData?.jobPosition} </h2>
         <h2 className="flex gap-2 items-center text-gray-500 mt-3">
-          <Clock /> 30 Minutes
+          <Clock /> {interviewData?.duration}
         </h2>
 
         {/* Name Input */}
@@ -47,7 +65,7 @@ function Interview() {
         </div>
 
         {/* Info Section */}
-        <div className="p-5 bg-indigo-100 flex gap-5 rounded-lg mt-5 w-full">
+        <div className="p-5 bg-indigo-100 flex gap-4 rounded-lg mt-5 w-full">
           <Info className="text-primary" />
           <div>
             <h2 className="font-bold">Before you Begin :</h2>
