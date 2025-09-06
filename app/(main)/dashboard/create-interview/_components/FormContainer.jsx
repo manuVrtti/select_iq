@@ -15,7 +15,7 @@ import { ArrowRight } from 'lucide-react'
 import { Item } from '@radix-ui/react-select'
 
 
-function FormContainer({onHandleInputChange, GoToNext}) {
+function FormContainer({onHandleInputChange, r}) {
 
     const [interviewType,setInterviewType]=useState([]);
 
