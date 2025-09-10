@@ -962,7 +962,7 @@ function Interview() {
     try {
       let { data: Interviews } = await supabase
         .from("Interviews")
-        .select("jobPosition,jobDescription,duration,type")
+        .select("jobPosition,jobDescription,duration,type,questionList")
         .eq("interview_id", interview_id);
 
       setInterviewData(Interviews?.[0]);
@@ -1045,8 +1045,9 @@ function Interview() {
       }
 
       // Save context info
+      console.log(Interviews[0]);
       setInterviewInfo({
-        userName,
+        userName:userName,
         interviewData: Interviews[0],
       });
 
