@@ -128,58 +128,60 @@
 // ---------- 🤍💛💚  Above is also good [restrict-mode] ----------
 //---------- 💦💝💛 More enhance---------
 
-"use client";
-import { InterviewDataContext } from "@/context/InterviewDataContext";
-import { Mic, Phone, Timer } from "lucide-react";
-import Image from "next/image";
-import React, { useContext, useEffect, useState } from "react";
-import Vapi from '@vapi-ai/web';
+// "use client";
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState } from "react";
+// import Vapi from '@vapi-ai/web';
 
 
-function StartInterview() { 
-  const { interviewInfo } = useContext(InterviewDataContext);
-  const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+// function StartInterview() { 
+//   const { interviewInfo } = useContext(InterviewDataContext);
+//   const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
 
-  useEffect(() => {
-    interviewInfo && startCall();
-  }, [interviewInfo]);
+//   useEffect(() => {
+//     interviewInfo && startCall();
+//   }, [interviewInfo]);
 
-  const startCall = () => {
-    // ✅ Normalize: interviewData OR root
-    const d = interviewInfo?.interviewData ?? interviewInfo;
+//   const startCall = () => {
+//     // ✅ Normalize: interviewData OR root
+//     const d = interviewInfo?.interviewData ?? interviewInfo;
 
-    // ✅ Support multiple keys
-    let raw =
-      d?.questionList ??
-      d?.questions ??
-      d?.questionlist ??
-      d?.questionsList ??
-      [];
+//     // ✅ Support multiple keys
+//     let raw =
+//       d?.questionList ??
+//       d?.questions ??
+//       d?.questionlist ??
+//       d?.questionsList ??
+//       [];
 
-    // ✅ Parse stringified JSON if needed
-    if (typeof raw === "string") {
-      try {
-        raw = JSON.parse(raw);
-      } catch {
-        raw = [];
-      }
-    }
+//     // ✅ Parse stringified JSON if needed
+//     if (typeof raw === "string") {
+//       try {
+//         raw = JSON.parse(raw);
+//       } catch {
+//         raw = [];
+//       }
+//     }
 
-    // ✅ Build final string
-    let questionList = "";
-    (Array.isArray(raw) ? raw : []).forEach((item, index) => {
-      const q = typeof item === "string" ? item : item?.question;
-      if (q && q.trim() !== "") {
-        questionList += (questionList ? ", " : "") + q.trim();
-      }
-    });
+//     // ✅ Build final string
+//     let questionList = "";
+//     (Array.isArray(raw) ? raw : []).forEach((item, index) => {
+//       const q = typeof item === "string" ? item : item?.question;
+//       if (q && q.trim() !== "") {
+//         questionList += (questionList ? ", " : "") + q.trim();
+//       }
+//     });
 
-    // ✅ Final console.log at the end
-    console.log(questionList);
-  };
+//     // ✅ Final console.log at the end
+//     console.log(questionList);
+//   };
 
 
+//   //---MY BC [ counts ]----
 
+//   let Penalty = 0;
 
 
 
@@ -191,168 +193,236 @@ function StartInterview() {
 
   
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [blocked, setBlocked] = useState(false);
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
 
-  const isFsActive = () =>
-    !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
-    );
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
 
-  const tryRequestFs = async () => {
-    const el = document.documentElement;
-    try {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-      else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
-      else if (el.msRequestFullscreen) await el.msRequestFullscreen();
-    } catch (e) {
-      // Will fail if not triggered by click
-    }
-    setIsFullscreen(isFsActive());
-  };
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch (e) {
+//       // Will fail if not triggered by click
+//     }
+//     setIsFullscreen(isFsActive());
+//   };
 
-  useEffect(() => {
-    setIsFullscreen(isFsActive());
+//   useEffect(() => {
+//     setIsFullscreen(isFsActive());
 
-    const onFsChange = () => {
-      const fsNow = isFsActive();
-      setIsFullscreen(fsNow);
-      setBlocked(!fsNow); // Block UI if fullscreen lost
-    };
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+//       setBlocked(!fsNow); // Block UI if fullscreen lost
+//     };
 
-    document.addEventListener("fullscreenchange", onFsChange);
-    document.addEventListener("webkitfullscreenchange", onFsChange);
-    document.addEventListener("mozfullscreenchange", onFsChange);
-    document.addEventListener("MSFullscreenChange", onFsChange);
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("webkitfullscreenchange", onFsChange);
+//     document.addEventListener("mozfullscreenchange", onFsChange);
+//     document.addEventListener("MSFullscreenChange", onFsChange);
 
-    // Restrict shortcuts (best-effort)
-    const onKeyDown = (e) => {
-      const key = (e.key || "").toLowerCase();
-      if (
-        e.key === "F11" ||
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (key === "i" || key === "j" || key === "t" || key === "n")) ||
-        (e.ctrlKey && key === "u") ||
-        (e.ctrlKey && key === "c") ||
-        (e.ctrlKey && key === "a") ||
-        (e.ctrlKey && key === "n") ||
-        (e.ctrlKey && key === "r") ||
-        (e.ctrlKey && key === "v") ||
-        (e.ctrlKey && key === "t") ||
-        (e.ctrlKey && key === "1") ||
-        (e.ctrlKey && key === "2") ||
-        (e.ctrlKey && key === "3") ||
-        (e.ctrlKey && key === "4") ||
-        (e.ctrlKey && key === "5") ||
-        (e.ctrlKey && key === "6") ||
-        (e.ctrlKey && key === "7") ||
-        (e.ctrlKey && key === "8") ||
-        (e.ctrlKey && key === "0") ||
-        (e.ctrlKey && key === "9") ||
-        (e.altKey && key === "F4") ||
-        (e.altKey && e.key === " ")||
-        (e.winKey)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        // alert("⚠️ Restricted action during interview.");
-      }
+//     // Restrict shortcuts (best-effort)
+//     // const onKeyDown = (e) => {
+//     //   const key = (e.key || "").toLowerCase();
+//     //   if  (
+//     //     e.key === "escape" ||
+//     //     e.key === "F11" ||        
+//     //     e.key === "F12" ||
+//     //     (e.ctrlKey && e.shiftKey && (key === "i" || key === "j" || key === "t" || key === "n")) ||
+//     //     (e.ctrlKey && key === "u") ||
+//     //     (e.ctrlKey && key === "c") ||
+//     //     (e.ctrlKey && key === "a") ||
+//     //     (e.ctrlKey && key === "n") ||
+//     //     (e.ctrlKey && key === "r") ||
+//     //     (e.ctrlKey && key === "v") ||
+//     //     (e.ctrlKey && key === "t") ||
+//     //     (e.ctrlKey && key === "1") ||
+//     //     (e.ctrlKey && key === "2") ||
+//     //     (e.ctrlKey && key === "3") ||
+//     //     (e.ctrlKey && key === "4") ||
+//     //     (e.ctrlKey && key === "5") ||
+//     //     (e.ctrlKey && key === "6") ||
+//     //     (e.ctrlKey && key === "7") ||
+//     //     (e.ctrlKey && key === "8") ||
+//     //     (e.ctrlKey && key === "0") ||
+//     //     (e.ctrlKey && key === "9") ||
+//     //     (e.altKey && key === "F4") ||
+//     //     (e.altKey && e.key === " ")||
+//     //     (e.winKey)
 
-      // ✅ Disable PrintScreen
-      if (e.key === "PrintScreen") {
-        e.preventDefault();
-        navigator.clipboard.writeText(""); // Clear clipboard
-        alert("⚠️ Screenshots are disabled during the interview.");
-      }
-    };
+        
+//     //   )  
+//     //   { Penalty += 1 ;
+//     //     e.preventDefault();
+//     //     e.stopPropagation();
+//     //      //alert("⚠️ Restricted action during interview. Penalty: -" + Penalty);
+//     //   }
 
-    //✅ Disable right-click
-    const disableContextMenu = (e) => e.preventDefault();
 
-    // ✅ Detect tab/window switch
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        alert("⚠️ You switched tabs or minimized the window. This may cause Disqualification from interview.");
-      }
-    };
+//     //===🎯🎯🎯 New Version of Keys Disablities====
 
-    document.addEventListener("keydown", onKeyDown, true);
-    document.addEventListener("contextmenu", disableContextMenu);
-    document.addEventListener("visibilitychange", onVisibilityChange);
+//     const onKeyDown = (e) => {
+//   // Only lowercase single-character keys; keep named keys' exact case ("Escape", "F11", etc.)
+//   const key = (e.key || "");
+//   const ch = key.length === 1 ? key.toLowerCase() : key;
 
-    return () => {
-      document.removeEventListener("fullscreenchange", onFsChange);
-      document.removeEventListener("webkitfullscreenchange", onFsChange);
-      document.removeEventListener("mozfullscreenchange", onFsChange);
-      document.removeEventListener("MSFullscreenChange", onFsChange);
-      document.removeEventListener("keydown", onKeyDown, true);
-      document.removeEventListener("contextmenu", disableContextMenu);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, []);
+//   // Treat Ctrl on Windows/Linux and Command on macOS the same for shortcut blocking
+//   const ctrlLike = e.ctrlKey || e.metaKey; // metaKey is Cmd on macOS and Windows key on Windows [1][16]
 
-  // If not fullscreen → show black screen + button
-  if (!isFullscreen || blocked) {
-    return (
-      <div className="w-screen h-screen bg-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <p className="mb-4 font-bold">
-            ⚠️ Interview requires Fullscreen Mode. Click below to continue.
-          </p>
-          <button
-            onClick={tryRequestFs}
-            className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
-          >
-            Re-Enter Fullscreen
-          </button>
-        </div>
-      </div>
-    );
-  }
+//   if (
+//     // Named/function keys must match exact case per spec
+//     key === "Escape" ||                          // not "escape" [14]
+//     key === "F11" ||                             // do not lowercase "F11" [14]
+//     key === "F12" ||                             // do not lowercase "F12" [14]
 
-  // Real interview UI
-  return (
-    <div className="p-10 lg:px-48 xl:px-56"> 
-      <h2 className="font-bold text-xl flex justify-between">AI Interview session
-        <span className="flex gap-2 items-center">
-          <Timer/>
-          00:00:00
-        </span>
-      </h2>
+//     // Ctrl/Cmd + Shift developer/browser combos (often non-cancelable in some browsers)
+//     (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) || // DevTools/new tab/new window [14][4]
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
-          <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-              <Image src={'/avataar.jpg'} alt="S-!Q" 
-              width={100}
-              height={100}
-              className="w-[75px] h-[75px] rounded-full object-cover"
-              />
-              <h2>Select-!Q</h2>
-          </div>
+//     // Common Ctrl/Cmd combos
+//     (ctrlLike && ch === "u") ||
+//     (ctrlLike && ch === "c") ||
+//     (ctrlLike && ch === "a") ||
+//     (ctrlLike && ch === "n") ||
+//     (ctrlLike && ch === "r") ||
+//     (ctrlLike && ch === "v") ||
+//     (ctrlLike && ch === "t") ||
+//     (ctrlLike && ch === "1") ||
+//     (ctrlLike && ch === "2") ||
+//     (ctrlLike && ch === "3") ||
+//     (ctrlLike && ch === "4") ||
+//     (ctrlLike && ch === "5") ||
+//     (ctrlLike && ch === "6") ||
+//     (ctrlLike && ch === "7") ||
+//     (ctrlLike && ch === "8") ||
+//     (ctrlLike && ch === "0") ||
+//     (ctrlLike && ch === "9") ||
+
+//     // Alt+F4 is a named key combo; compare the named key with exact case
+//     (e.altKey && key === "F4") ||                // not lowercased [14]
+
+//     // Space with Alt (compare with the actual space key value " ")
+//     (e.altKey && key === " ") ||
+
+//     // Windows/Command key handling: there is no e.winKey; use metaKey
+//     (e.metaKey)                                  // replaces (e.winKey) [1][16]
+//   ) {
+//     Penalty += 1;
+
+//     // Only prevent default if the event is cancelable; privileged shortcuts may be non-cancelable
+//     if (e.cancelable) e.preventDefault();        // avoids no-op/warnings on reserved shortcuts [11][4]
+
+//     e.stopPropagation();
+//     // alert("⚠️ Restricted action during interview. Penalty: -" + Penalty);
+//   }
+
+
+
+//     //=========================================
+
+
+//       // ✅ Disable PrintScreen
+//       if (e.key === "PrintScreen") {
+//         e.preventDefault();
+//         navigator.clipboard.writeText(""); // Clear clipboard
+//         alert("⚠️ Screenshots are disabled during the interview.");
+//       }
+//     };
+
+//     //✅ Disable right-click
+//     const disableContextMenu = (e) => e.preventDefault();
+
+//     // ✅ Detect tab/window switch
+//     const onVisibilityChange = () => {
+//       if (document.hidden) Penalty += 1;{
+//         alert("⚠️ You switched tabs or minimized the window. This may cause Disqualification from interview. Penalty: -" + Penalty);
+//       }
+//     };
+
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("webkitfullscreenchange", onFsChange);
+//       document.removeEventListener("mozfullscreenchange", onFsChange);
+//       document.removeEventListener("MSFullscreenChange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   // If not fullscreen → show black screen + button
+//   if (!isFullscreen || blocked)  { Penalty+=1
+//     return (
+//       <div className="w-screen h-screen bg-black flex items-center justify-center">
+//         <div className="text-center text-white">
+//           <p className="mb-4 font-bold">
+//             ⚠️ Interview requires Fullscreen Mode. Click below to continue. Penalities are adding while leaving Full-screen. 
+//           </p>
+//           <h2 className="mb-4 font-bold">Penality: {Penalty} </h2>
+
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Real interview UI
+//   return (
+//     <div className="p-10 lg:px-48 xl:px-56"> 
+//       <h2 className="font-bold text-xl flex justify-between">AI Interview session
+//         <span className="flex gap-2 items-center">
+//           <Timer/>
+//           00:00:00
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+//           <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//               <Image src={'/avataar.jpg'} alt="S-!Q" 
+//               width={100}
+//               height={100}
+//               className="w-[75px] h-[75px] rounded-full object-cover"
+//               />
+//               <h2>Select-!Q</h2>
+//           </div>
           
-          <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-              <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 "> {interviewInfo?.userName[0]} </h2>
-              <h2>{interviewInfo?.userName}</h2>
-          </div>
-      </div>
+//           <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//               <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 "> {interviewInfo?.userName[0]} </h2>
+//               <h2>{interviewInfo?.userName}</h2>
+//           </div>
+//       </div>
 
-      <div className="flex justify-center items-center gap-7 mt-7">
-        <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//       <div className="flex justify-center items-center gap-7 mt-7">
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
 
-        <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
-      </div>
+//         <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//       </div>
 
-      <h2 className="text-sm text-gray-400 text-center mt-3">Interview in Progress...</h2>
+//       <h2 className="text-sm text-gray-400 text-center mt-3">Interview in Progress...</h2>
   
-    </div>
-  );
-}
+//     </div>
+//   );
+// }
 
-export default StartInterview;
+// export default StartInterview;
 
 // ======= 🤍💛 Test Block All-keys Blocked ========
 
@@ -518,4 +588,904 @@ export default StartInterview;
 
 
 // ======= 💥💥💥 Try real-time Video [131-355 pro]======
+
+
+
+
+
+
+
+
+
+
+// "use client";
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState } from "react";
+// import Vapi from "@vapi-ai/web";
+// import AlertConfirmation from "./_components/AlertConfirmation";
+
+
+// function StartInterview() {
+//   const { interviewInfo } = useContext(InterviewDataContext);
+//   const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+
+//   useEffect(() => {
+//     interviewInfo && startCall();
+//   }, [interviewInfo]);
+
+//   const startCall = () => {
+//     const d = interviewInfo?.interviewData ?? interviewInfo;
+//     let raw =
+//       d?.questionList ??
+//       d?.questions ??
+//       d?.questionlist ??
+//       d?.questionsList ??
+//       [];
+
+//     if (typeof raw === "string") {
+//       try {
+//         raw = JSON.parse(raw);
+//       } catch {
+//         raw = [];
+//       }
+//     }
+
+//     let questionList = "";
+//     (Array.isArray(raw) ? raw : []).forEach((item) => {
+//       const q = typeof item === "string" ? item : item?.question;
+//       if (q && q.trim() !== "") {
+//         questionList += (questionList ? ", " : "") + q.trim();
+//       }
+//     });
+
+//       const assistantOptions = {
+//         name: "AI Recruiter",
+//         firstMessage: "Hi "+interviewInfo?.userName+", how are you? Ready for your interview on "+interviewInfo?.interviewData?.jobPosition,
+//         transcriber: {
+//             provider: "deepgram",
+//             model: "nova-2",
+//             language: "en-US",
+//         },
+//         voice: {
+//             provider: "playht",
+//             voiceId: "jennifer",
+//         },
+//         model: {
+//             provider: "openai",
+//             model: "gpt-4",
+//             messages: [
+//                 {
+//                     role: "system",
+//                     content: `
+//       You are an AI voice assistant conducting interviews.
+//     Your job is to ask candidates provided interview questions, assess their responses.
+//     Begin the conversation with a friendly introduction, setting a relaxed yet professional tone. Example:
+//     "Hey there! Welcome to your `+interviewInfo?.interviewData?.jobPosition+` interview. Let’s get started with a few questions!"
+//     Ask one question at a time and wait for the candidate’s response before proceeding. Keep the questions clear and concise. Below Are the questions ask one by one:
+//     Questions: `+questionList+`
+//     If the candidate struggles, offer hints or rephrase the question without giving away the answer. Example:
+//     "Need a hint? Think about how React tracks component updates!"
+//     Provide brief, encouraging feedback after each answer. Example:
+//     "Nice! That’s a solid answer."
+//     "Hmm, not quite! Want to try again?"
+//     Keep the conversation natural and engaging—use casual phrases like "Alright, next up..." or "Let’s tackle a tricky one!"
+//     After 5-7 questions, wrap up the interview smoothly by summarizing their performance. Example:
+//     "That was great! You handled some tough questions well. Keep sharpening your skills!"
+//     End on a positive note:
+//     "Thanks for chatting! We'll update your result soon !"
+//     Key Guidelines:
+//     ✅ Be friendly, engaging, and witty 🎤
+//     ✅ Keep responses short and natural, like a real conversation
+//     ✅ Adapt based on the candidate’s confidence level
+//     ✅ Ensure the interview remains focused on React
+//     `.trim(),
+//                 },
+//             ],
+//         },
+//     };
+
+//     vapi.start(assistantOptions)
+
+//   };
+
+//   //------------ Vapi stop after Cut ------
+//   const stopInterview=()=>{
+//     vapi.stop()
+//   }
+
+//   // --- Penalties ---
+//   const [penalty, setPenalty] = useState(0);
+
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
+
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
+
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch {}
+//     setIsFullscreen(isFsActive());
+//   };
+
+//   // 🔎 Extension check only once
+//   const detectExtensions = () => {
+//     const suspiciousScripts = Array.from(document.scripts).filter(
+//       (s) => s.src && s.src.startsWith("chrome-extension://")
+//     );
+//     const suspiciousKeys = Object.keys(window).filter(
+//       (key) =>
+//         key.toLowerCase().includes("extension") ||
+//         key.toLowerCase().includes("gpt") ||
+//         key.toLowerCase().includes("grammarly")
+//     );
+
+//     if (suspiciousScripts.length > 0 || suspiciousKeys.length > 0) {
+//       alert("⚠️ Extensions detected! Please turn them off for a fair interview.");
+//     }
+//   };
+
+//   useEffect(() => {
+//     setIsFullscreen(isFsActive());
+
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+//       setBlocked(!fsNow);
+//       if (!fsNow) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ Fullscreen exited. Penalty added.");
+//       }
+//     };
+
+//     detectExtensions();
+
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("webkitfullscreenchange", onFsChange);
+//     document.addEventListener("mozfullscreenchange", onFsChange);
+//     document.addEventListener("MSFullscreenChange", onFsChange);
+
+//     const onKeyDown = (e) => {
+//       const key = e.key || "";
+//       const ch = key.length === 1 ? key.toLowerCase() : key;
+//       const ctrlLike = e.ctrlKey || e.metaKey;
+
+//       if (
+//         key === "" ||
+//         key === "Escape" ||
+//         key === "F11" ||
+//         key === "F12" ||
+//         (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) ||
+//         (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+//         (ctrlLike && ["1","2","3","4","5","6","7","8","9","0"].includes(ch)) ||
+//         (e.altKey && key === "F4") ||
+//         (e.altKey && key === " ") ||
+//         e.metaKey
+//       ) {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         e.stopPropagation();
+//       }
+
+//       if (key === "PrintScreen") {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         navigator.clipboard.writeText("");
+//         alert("⚠️ Screenshots disabled. Penalty added.");
+//       }
+//     };
+
+//     const disableContextMenu = (e) => {
+//       e.preventDefault();
+//       setPenalty((p) => p + 1);
+//     };
+
+//     const onVisibilityChange = () => {
+//       if (document.hidden) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ You switched tabs or minimized. Penalty added.");
+//       }
+//     };
+
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("webkitfullscreenchange", onFsChange);
+//       document.removeEventListener("mozfullscreenchange", onFsChange);
+//       document.removeEventListener("MSFullscreenChange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   if (!isFullscreen || blocked) {
+//     return (
+//       <div className="w-screen h-screen bg-black flex items-center justify-center">
+//         <div className="text-center text-white">
+//           <p className="mb-4 font-bold">
+//             ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+//           </p>
+//           <h2 className="mb-4 font-bold">Penalty: {penalty}</h2>
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-10 lg:px-48 xl:px-56">
+//       <h2 className="font-bold text-xl flex justify-between">
+//         AI Interview session
+//         <span className="flex gap-6 items-center">
+          
+//           <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+
+//           <Timer /> 00:00:00
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <Image
+//             src={"/avataar.jpg"}
+//             alt="S-!Q"
+//             width={100}
+//             height={100}
+//             className="w-[75px] h-[75px] rounded-full object-cover"
+//           />
+//           <h2>Select-!Q</h2>
+//         </div>
+
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
+//             {interviewInfo?.userName[0]}
+//           </h2>
+//           <h2>{interviewInfo?.userName}</h2>
+//         </div>
+//       </div>
+
+//       <div className="flex justify-center items-center gap-7 mt-7">
+
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//         <AlertConfirmation    stopInterview={()=>stopInterview}>
+//           <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//         </AlertConfirmation>
+
+        
+//       </div>
+
+//       <h2 className="text-sm text-gray-400 text-center mt-3">
+//         Interview in Progress...
+//       </h2>
+//     </div>
+//   );
+// }
+
+// export default StartInterview;
+
+
+
+
+
+
+
+
+//======= Fully Final -001=====
+"use client";
+import { InterviewDataContext } from "@/context/InterviewDataContext";
+import { Mic, Phone, Timer } from "lucide-react";
+import Image from "next/image";
+import React, { useContext, useEffect, useState } from "react";
+import Vapi from "@vapi-ai/web";
+import AlertConfirmation from "./_components/AlertConfirmation";
+
+function StartInterview() {
+  const { interviewInfo } = useContext(InterviewDataContext);
+  const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+
+  // ✅ Start interview
+  useEffect(() => {
+    interviewInfo && startCall();
+  }, [interviewInfo]);
+
+  const startCall = () => {
+    const d = interviewInfo?.interviewData ?? interviewInfo;
+
+    let raw =
+      d?.questionList ??
+      d?.questions ??
+      d?.questionlist ??
+      d?.questionsList ??
+      [];
+
+    if (typeof raw === "string") {
+      try {
+        raw = JSON.parse(raw);
+      } catch {
+        raw = [];
+      }
+    }
+
+    let questionList = "";
+    (Array.isArray(raw) ? raw : []).forEach((item) => {
+      const q = typeof item === "string" ? item : item?.question;
+      if (q && q.trim() !== "") {
+        questionList += (questionList ? ", " : "") + q.trim();
+      }
+    });
+
+    const assistantOptions = {
+      name: "AI Recruiter",
+      firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}`,
+      transcriber: {
+        provider: "deepgram",
+        model: "nova-2",
+        language: "en-US",
+      },
+      voice: {
+        provider: "playht",
+        voiceId: "jennifer",
+      },
+      model: {
+        provider: "openai",
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `
+      You are an AI voice assistant conducting interviews.
+      Your job is to ask candidates provided interview questions, assess their responses.
+      Begin with a friendly introduction, e.g.:
+      "Hey there! Welcome to your ${interviewInfo?.interviewData?.jobPosition} interview. Let’s get started!"
+      
+      Ask one question at a time from:
+      Questions: ${questionList}
+
+      If candidate struggles, offer hints.
+      Provide short encouraging feedback after answers.
+      Wrap up positively after 5–7 questions.
+      ✅ Be friendly, engaging, and witty 🎤
+      ✅ Keep responses short & natural
+      ✅ Adapt to candidate’s confidence
+      ✅ Stay focused on jobDescription and questionList.
+      `.trim(),
+          },
+        ],
+      },
+    };
+
+    vapi.start(assistantOptions);
+  };
+
+  // ✅ Stop interview when phone button clicked
+  const stopInterview = () => {
+    vapi.stop();
+  };
+
+  // --- Penalties ---
+  const [penalty, setPenalty] = useState(0);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+
+  const isFsActive = () =>
+    !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+  const tryRequestFs = async () => {
+    const el = document.documentElement;
+    try {
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+    } catch {}
+    setIsFullscreen(isFsActive());
+  };
+
+  // 🔎 Extension check only once
+  const detectExtensions = () => {
+    const suspiciousScripts = Array.from(document.scripts).filter(
+      (s) => s.src && s.src.startsWith("chrome-extension://")
+    );
+    const suspiciousKeys = Object.keys(window).filter(
+      (key) =>
+        key.toLowerCase().includes("extension") ||
+        key.toLowerCase().includes("gpt") ||
+        key.toLowerCase().includes("grammarly")
+    );
+
+    if (suspiciousScripts.length > 0 || suspiciousKeys.length > 0) {
+      alert("⚠️ Extensions detected! Please turn them off for a fair interview.");
+    }
+  };
+
+  useEffect(() => {
+    setIsFullscreen(isFsActive());
+
+    const onFsChange = () => {
+      const fsNow = isFsActive();
+      setIsFullscreen(fsNow);
+      setBlocked(!fsNow);
+      if (!fsNow) {
+        setPenalty((p) => p + 1);
+        alert("⚠️ Fullscreen exited. Penalty added.");
+      }
+    };
+
+    detectExtensions();
+
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange);
+    document.addEventListener("mozfullscreenchange", onFsChange);
+    document.addEventListener("MSFullscreenChange", onFsChange);
+
+    const onKeyDown = (e) => {
+      const key = e.key || "";
+      const ch = key.length === 1 ? key.toLowerCase() : key;
+      const ctrlLike = e.ctrlKey || e.metaKey;
+
+      if (
+        key === "" ||
+        key === "Escape" ||
+        key === "F11" ||
+        key === "F12" ||
+        (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) ||
+        (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+        (ctrlLike && ["1","2","3","4","5","6","7","8","9","0"].includes(ch)) ||
+        (e.altKey && key === "F4") ||
+        (e.altKey && key === " ") ||
+        e.metaKey
+      ) {
+        setPenalty((p) => p + 1);
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+
+      if (key === "PrintScreen") {
+        setPenalty((p) => p + 1);
+        if (e.cancelable) e.preventDefault();
+        navigator.clipboard.writeText("");
+        alert("⚠️ Screenshots disabled. Penalty added.");
+      }
+    };
+
+    const disableContextMenu = (e) => {
+      e.preventDefault();
+      setPenalty((p) => p + 1);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        setPenalty((p) => p + 1);
+        alert("⚠️ You switched tabs or minimized. Penalty added.");
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("contextmenu", disableContextMenu);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange);
+      document.removeEventListener("mozfullscreenchange", onFsChange);
+      document.removeEventListener("MSFullscreenChange", onFsChange);
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("contextmenu", disableContextMenu);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
+
+  // If not fullscreen → block screen
+  if (!isFullscreen || blocked) {
+    return (
+      <div className="w-screen h-screen bg-black flex items-center justify-center">
+        <div className="text-center text-white">
+          <p className="mb-4 font-bold">
+            ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+          </p>
+          <h2 className="mb-4 font-bold">Penalty: {penalty}</h2>
+          <button
+            onClick={tryRequestFs}
+            className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
+          >
+            Re-Enter Fullscreen
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Main UI
+  return (
+    <div className="p-10 lg:px-48 xl:px-56">
+      <h2 className="font-bold text-xl flex justify-between">
+        AI Interview session
+        <span className="flex gap-6 items-center">
+          <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+          <Timer /> 00:00:00
+        </span>
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+        <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+          <Image
+            src={"/avataar.jpg"}
+            alt="S-!Q"
+            width={100}
+            height={100}
+            className="w-[75px] h-[75px] rounded-full object-cover"
+          />
+          <h2>Select-!Q</h2>
+        </div>
+
+        <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+          <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
+            {interviewInfo?.userName[0]}
+          </h2>
+
+          <h2>{interviewInfo?.userName}</h2>
+        </div>
+      </div>
+
+      <div className="flex justify-center items-center gap-7 mt-7">
+        <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+        <AlertConfirmation stopInterview={stopInterview}>
+          <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+        </AlertConfirmation>
+      </div>
+
+      <h2 className="text-sm text-gray-400 text-center mt-3">
+        Interview in Progress...
+      </h2>
+    </div>
+  );
+}
+
+export default StartInterview;
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==========Fully Final- 002=========
+
+
+
+
+
+
+
+
+
+
+// "use client";
+
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState, useRef } from "react";
+// import Vapi from "@vapi-ai/web";
+// import AlertConfirmation from "./_components/AlertConfirmation";
+
+// function StartInterview() {
+//   const { interviewInfo } = useContext(InterviewDataContext);
+//   const vapiRef = useRef(null);
+
+//   // --- State
+//   const [penalty, setPenalty] = useState(0);
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
+
+//   // --- Fullscreen helpers
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
+
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch {}
+//     setIsFullscreen(isFsActive());
+//   };
+
+//   // --- Detect extensions once
+//   const detectExtensions = () => {
+//     const suspiciousScripts = Array.from(document.scripts).filter(
+//       (s) => s.src && s.src.startsWith("chrome-extension://")
+//     );
+//     const suspiciousKeys = Object.keys(window).filter(
+//       (key) =>
+//         key.toLowerCase().includes("extension") ||
+//         key.toLowerCase().includes("gpt") ||
+//         key.toLowerCase().includes("grammarly")
+//     );
+//     if (suspiciousScripts.length > 0 || suspiciousKeys.length > 0) {
+//       alert("⚠️ Extensions detected! Please turn them off for a fair interview.");
+//     }
+//   };
+
+//   // --- Start call
+//   const startCall = () => {
+//     if (!interviewInfo) return;
+
+//     // Parse question list
+//     const d = interviewInfo?.interviewData ?? interviewInfo;
+//     let raw =
+//       d?.questionList ?? d?.questions ?? d?.questionlist ?? d?.questionsList ?? [];
+
+//     if (typeof raw === "string") {
+//       try {
+//         raw = JSON.parse(raw);
+//       } catch {
+//         raw = [];
+//       }
+//     }
+
+//     let questionList = "";
+//     (Array.isArray(raw) ? raw : []).forEach((item) => {
+//       const q = typeof item === "string" ? item : item?.question;
+//       if (q && q.trim() !== "") {
+//         questionList += (questionList ? ", " : "") + q.trim();
+//       }
+//     });
+
+//     // Initialize Vapi once
+//     if (!vapiRef.current) {
+//       vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+//     }
+
+//     const assistantOptions = {
+//       assistantId: process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID, // ✅ must be string ID
+//       name: "AI Recruiter",
+//       firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}?`,
+//       transcriber: {
+//         provider: "deepgram",
+//         model: "nova-2",
+//         language: "en-US",
+//       },
+//       voice: {
+//         provider: "playht",
+//         voiceId: "jennifer",
+//       },
+//       model: {
+//         provider: "openai",
+//         model: "gpt-4",
+//         messages: [
+//           {
+//             role: "system",
+//             content: `
+//               You are an AI voice assistant conducting interviews.
+//               Your job is to ask candidates provided interview questions, assess their responses.
+//               Begin friendly:
+//               "Hey there! Welcome to your ${interviewInfo?.interviewData?.jobPosition} interview. Let’s get started!"
+              
+//               Ask one question at a time from:
+//               Questions: ${questionList}
+
+//               If candidate struggles → offer hints.
+//               Provide short encouraging feedback.
+//               Wrap up positively after 5–7 questions.
+
+//               ✅ Be friendly, engaging, witty 🎤
+//               ✅ Keep responses short & natural
+//               ✅ Adapt to candidate confidence
+//               ✅ Stay focused on React.
+//             `.trim(),
+//           },
+//         ],
+//       },
+//       allowMultipleCallInstances: false, // ✅ ensures only one call
+//     };
+
+//     // Start call
+//     vapiRef.current.start(assistantOptions).catch((err) => {
+//       console.error("❌ Vapi start error:", err);
+//     });
+//   };
+
+//   // --- Stop call
+//   const stopInterview = () => {
+//     if (vapiRef.current) {
+//       vapiRef.current.stop().catch((err) => {
+//         console.error("❌ Vapi stop error:", err);
+//       });
+//     }
+//   };
+
+//   // --- Effects
+//   useEffect(() => {
+//     if (interviewInfo) startCall();
+//   }, [interviewInfo]);
+
+//   useEffect(() => {
+//     setIsFullscreen(isFsActive());
+
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+//       setBlocked(!fsNow);
+//       if (!fsNow) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ Fullscreen exited. Penalty added.");
+//       }
+//     };
+
+//     detectExtensions();
+
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("webkitfullscreenchange", onFsChange);
+//     document.addEventListener("mozfullscreenchange", onFsChange);
+//     document.addEventListener("MSFullscreenChange", onFsChange);
+
+//     const onKeyDown = (e) => {
+//       const key = e.key || "";
+//       const ch = key.length === 1 ? key.toLowerCase() : key;
+//       const ctrlLike = e.ctrlKey || e.metaKey;
+
+//       if (
+//         key === "" ||
+//         key === "Escape" ||
+//         key === "F11" ||
+//         key === "F12" ||
+//         (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) ||
+//         (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+//         (ctrlLike && ["1","2","3","4","5","6","7","8","9","0"].includes(ch)) ||
+//         (e.altKey && key === "F4") ||
+//         (e.altKey && key === " ") ||
+//         e.metaKey
+//       ) {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         e.stopPropagation();
+//       }
+
+//       if (key === "PrintScreen") {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         navigator.clipboard.writeText("");
+//         alert("⚠️ Screenshots disabled. Penalty added.");
+//       }
+//     };
+
+//     const disableContextMenu = (e) => {
+//       e.preventDefault();
+//       setPenalty((p) => p + 1);
+//     };
+
+//     const onVisibilityChange = () => {
+//       if (document.hidden) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ You switched tabs or minimized. Penalty added.");
+//       }
+//     };
+
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("webkitfullscreenchange", onFsChange);
+//       document.removeEventListener("mozfullscreenchange", onFsChange);
+//       document.removeEventListener("MSFullscreenChange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   // --- Blocked screen
+//   if (!isFullscreen || blocked) {
+//     return (
+//       <div className="w-screen h-screen bg-black flex items-center justify-center">
+//         <div className="text-center text-white">
+//           <p className="mb-4 font-bold">
+//             ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+//           </p>
+//           <h2 className="mb-4 font-bold">Penalty: {penalty}</h2>
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // --- Main UI
+//   return (
+//     <div className="p-10 lg:px-48 xl:px-56">
+//       <h2 className="font-bold text-xl flex justify-between">
+//         AI Interview session
+//         <span className="flex gap-6 items-center">
+//           <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+//           <Timer /> 00:00:00
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5">
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <Image
+//             src={"/avataar.jpg"}
+//             alt="S-!Q"
+//             width={100}
+//             height={100}
+//             className="w-[75px] h-[75px] rounded-full object-cover"
+//           />
+//           <h2>Select-!Q</h2>
+//         </div>
+
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
+//             {interviewInfo?.userName[0]}
+//           </h2>
+//           <h2>{interviewInfo?.userName}</h2>
+//         </div>
+//       </div>
+
+//       <div className="flex justify-center items-center gap-7 mt-7">
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//         <AlertConfirmation stopInterview={stopInterview}>
+//           <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//         </AlertConfirmation>
+//       </div>
+
+//       <h2 className="text-sm text-gray-400 text-center mt-3">
+//         Interview in Progress...
+//       </h2>
+//     </div>
+//   );
+// }
+
+// export default StartInterview;
 

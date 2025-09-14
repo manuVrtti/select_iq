@@ -1114,7 +1114,10 @@ function Interview() {
               <li className="text-primary">
                 Ensure you have a stable internet connection
               </li>
-              <li className="text-primary">Keep your window Full-screen</li>
+              <li className="text-primary">Remain in full screen throughout the interview </li>
+              <li className="text-primary">Don't Press any keys and leave Full-screen Mode 
+              </li>
+              <li className="text-primary">Using any unfair means may result in disqualification</li>
             </ul>
           </div>
         </div>
