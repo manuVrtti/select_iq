@@ -896,20 +896,27 @@
 import { InterviewDataContext } from "@/context/InterviewDataContext";
 import { Mic, Phone, Timer } from "lucide-react";
 import Image from "next/image";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import Vapi from "@vapi-ai/web";
 import AlertConfirmation from "./_components/AlertConfirmation";
 
 function StartInterview() {
   const { interviewInfo } = useContext(InterviewDataContext);
-  const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
 
-  // ✅ Start interview
+  // ✅ Persist Vapi instance
+  const vapiRef = useRef(null);
+  if (!vapiRef.current) {
+    console.log("Loaded VAPI Public Key:", process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+    vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+  }
+
+  // ✅ Start interview when interviewInfo is ready
   useEffect(() => {
-    interviewInfo && startCall();
+    if (interviewInfo) startCall();
   }, [interviewInfo]);
 
   const startCall = () => {
+    const vapi = vapiRef.current;
     const d = interviewInfo?.interviewData ?? interviewInfo;
 
     let raw =
@@ -954,22 +961,16 @@ function StartInterview() {
           {
             role: "system",
             content: `
-      You are an AI voice assistant conducting interviews.
-      Your job is to ask candidates provided interview questions, assess their responses.
-      Begin with a friendly introduction, e.g.:
-      "Hey there! Welcome to your ${interviewInfo?.interviewData?.jobPosition} interview. Let’s get started!"
-      
-      Ask one question at a time from:
-      Questions: ${questionList}
-
-      If candidate struggles, offer hints.
-      Provide short encouraging feedback after answers.
-      Wrap up positively after 5–7 questions.
-      ✅ Be friendly, engaging, and witty 🎤
-      ✅ Keep responses short & natural
-      ✅ Adapt to candidate’s confidence
-      ✅ Stay focused on jobDescription and questionList.
-      `.trim(),
+              You are an AI voice assistant conducting interviews.
+              Ask candidates the provided interview questions one at a time.
+              Encourage them, give hints if they struggle, and provide short feedback.
+              Wrap up positively after 5–7 questions.
+              ✅ Be friendly, engaging, and witty 🎤
+              ✅ Keep responses short & natural
+              ✅ Stay focused on jobDescription and questionList.
+              
+              Questions: ${questionList}
+            `.trim(),
           },
         ],
       },
@@ -980,12 +981,12 @@ function StartInterview() {
 
   // ✅ Stop interview when phone button clicked
   const stopInterview = () => {
-    vapi.stop();
+    vapiRef.current?.stop();
+    console.log("Interview stopped.");
   };
 
   // --- Penalties ---
   const [penalty, setPenalty] = useState(0);
-
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blocked, setBlocked] = useState(false);
 
@@ -1008,7 +1009,7 @@ function StartInterview() {
     setIsFullscreen(isFsActive());
   };
 
-  // 🔎 Extension check only once
+  // 🔎 Security checks
   const detectExtensions = () => {
     const suspiciousScripts = Array.from(document.scripts).filter(
       (s) => s.src && s.src.startsWith("chrome-extension://")
@@ -1149,7 +1150,6 @@ function StartInterview() {
           <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
             {interviewInfo?.userName[0]}
           </h2>
-
           <h2>{interviewInfo?.userName}</h2>
         </div>
       </div>
@@ -1169,6 +1169,7 @@ function StartInterview() {
 }
 
 export default StartInterview;
+
  
 
 
