@@ -315,16 +315,22 @@ function SidebarHeader({
   );
 }
 
+// ✅ SidebarFooter: for items shown at the bottom (like Logout)
 function SidebarFooter({
   className,
+  children,
   ...props
 }) {
   return (
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props} />
+      // 🔑 Added border-top & padding so logout button looks separate
+      className={cn("flex flex-col gap-2 p-2 border-t mt-auto", className)}
+      {...props}
+    >
+      {children} {/* ✅ Render logout button or other footer items */}
+    </div>
   );
 }
 

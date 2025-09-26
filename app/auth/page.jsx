@@ -11,7 +11,8 @@ function Login() {
    * 💛Used to sigh-in with google
    */
   const signInWithGoogle= async()=>{
-    const {error}=await supabase.auth.signInWithOAuth({ provider:'google'
+    const {error}=await supabase.auth.signInWithOAuth({ provider:'google', options: {redirectTo: `${window.location.origin}/dashboard`,// after login redirect krega}
+    },
     })
 
     if(error)
