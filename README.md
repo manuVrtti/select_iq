@@ -4,7 +4,7 @@
 SelectIQ is a modern MERN + AI platform that streamlines **assessments, coding rounds, and AI-driven interviews** – all in one place.  
 
 <p align="center">
-  <a href="https://github.com/manuVrtti/select_iq/actions"><img src="https://img.shields.io/github/actions/workflow/status/manuVrtti/select_iq/ci.yml?branch=main&logo=github&label=Build" alt="Build Status"></a>
+  <a href="https://github.com/manuVrtti/select_iq/actions"><img src="https://github.com/manuVrtti/select_iq/actions/workflows/ci.yml/badge.svg?branch=main" alt="Build Status"></a>
   <a href="https://select-iq.vercel.app"><img src="https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel" alt="Vercel Deploy"></a>
   <a href="https://github.com/manuVrtti/select_iq/stargazers"><img src="https://img.shields.io/github/stars/manuVrtti/select_iq?style=social" alt="GitHub Stars"></a>
   <a href="https://github.com/manuVrtti/select_iq/network/members"><img src="https://img.shields.io/github/forks/manuVrtti/select_iq?style=social" alt="GitHub Forks"></a>
@@ -64,8 +64,32 @@ flowchart TD
     Client -->|Voice/Chat| AI
     AI -->|Insights| Client
 ```
-🖼️ Architecture 
- 
+
+---
+
+## ⚡ Tech Stack  
+
+**Frontend:**  
+- ⚛️ React 19 + Next.js 15  
+- 🎨 TailwindCSS 4 + shadcn/ui + Framer Motion + GSAP  
+- 🌗 next-themes for dark/light mode  
+
+**Backend:**  
+- 🟢 Supabase (Auth, Database, Realtime, Storage)  
+
+**AI Integration:**  
+- 🤖 OpenAI GPT APIs (interview analysis, feedback)  
+- 🎙️ Vapi.ai (real-time voice interview experience)  
+
+**DevOps & Deployment:**  
+- ▲ Vercel (CI/CD + Hosting)  
+- 🔍 Vercel Analytics + Speed Insights  
+
+---
+
+## 📂 Project Structure  
+
+```
 select_iq/
 ├── app/                  # Next.js App Router
 │   ├── page.jsx          # Landing / Interview page
@@ -82,68 +106,81 @@ select_iq/
 ├── tailwind.config.js    # Tailwind config
 ├── package.json          # Dependencies & scripts
 └── README.md             # 📘 You are here
+```
 
-1️⃣ Clone the Repository
+---
 
+## ⚙️ Setup & Installation  
+
+### 1️⃣ Clone the Repository  
+```bash
 git clone https://github.com/manuVrtti/select_iq.git
 cd select_iq
+```
 
-2️⃣ Install Dependencies
-
+### 2️⃣ Install Dependencies  
+```bash
 npm install
 # or
 yarn install
+```
 
-3️⃣ Configure Environment Variables
-Create a .env.local file:
-
+### 3️⃣ Configure Environment Variables  
+Create a `.env.local` file:  
+```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-key
 NEXT_PUBLIC_VAPI_PUBLIC_KEY=your-vapi-key
 OPENAI_API_KEY=your-openai-key
+```
 
-4️⃣ Run Development Server
-
+### 4️⃣ Run Development Server  
+```bash
 npm run dev
-Visit 👉 http://localhost:3000
+```
+Visit 👉 [http://localhost:3000](http://localhost:3000)  
 
+---
 
----------------------------------------------
+## 🧪 Usage Flow  
 
-🧪 Usage Flow
+1. **Login / Signup** via Supabase  
+2. **Choose Assessment Round**  
+   - MCQs, reasoning, CS fundamentals  
+3. **Coding Round**  
+   - Solve coding problems with testcases  
+4. **AI Interview**  
+   - Real-time voice/video AI interview (Vapi + OpenAI)  
+5. **Get Feedback & Report**  
 
-Login / Signup via Supabase
+---
 
-Choose Assessment Round
+## 🚀 Deployment  
 
-MCQs, reasoning, CS fundamentals
+Deployed easily on **Vercel**:  
+```bash
+npm run build
+vercel deploy
+```
 
-Coding Round
+---
 
-Solve coding problems with testcases
+## 🤝 Contributing  
 
-AI Interview
+We welcome contributions! 🎉  
 
-Real-time voice/video AI interview (Vapi + OpenAI)
+1. Fork the repo  
+2. Create a new branch: `git checkout -b feature-name`  
+3. Commit changes: `git commit -m 'Add feature'`  
+4. Push branch: `git push origin feature-name`  
+5. Create a Pull Request  
 
-Get Feedback & Report
+---
 
----------------------------------------------------
+## 📜 License  
 
-🤝 Contributing
+This project is licensed under the **MIT License**.  
 
-We welcome contributions! 🎉
+---
 
-Fork the repo
-
-Create a new branch: git checkout -b feature-name
-
-Commit changes: git commit -m 'Add feature'
-
-Push branch: git push origin feature-name
-
-Create a Pull Request
-
-📜 License
-
-This project is licensed under the MIT License.
+💡 *SelectIQ: Redefining hiring with AI, voice, and automation.*  
