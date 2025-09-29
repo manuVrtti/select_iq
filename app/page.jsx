@@ -1598,9 +1598,10 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 py-16 md:py-20 flex flex-col md:flex-row items-center justify-between gap-10">
-        <div className="max-w-xl">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight ">
+      <section className="max-w-6xl mx-auto px-6 pt-6 md:pt-8 pb-0 flex flex-col md:flex-row items-center justify-between gap-10">
+        {/* Text Block */}
+        <div className="max-w-xl -mt-10 md:-mt-12">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
             Smart Hiring Made{" "}
             <motion.span
               key={currentWordIndex}
@@ -1627,17 +1628,22 @@ export default function Home() {
             </Link>
           </div>
         </div>
+
+        {/* Right Image */}
         <Image
-          src="/login.jpg"
+          src="/hero-1.png"
           alt="AI Interview"
-          width={480}
-          height={380}
-          className="rounded-2xl shadow-xl parallax-card mt-16"
+          width={450}
+          height={350}
+          className="rounded-2xl parallax-card mt-24  -mb-6 md:-mb-8"
         />
       </section>
 
+
+
+
       {/* Features */}
-      <section id="features" className="py-16 px-6 bg-white dark:bg-gray-950">
+      <section id="features" className="py-16 px-6 bg-white dark:bg-gray-950 -mb-8">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="text-3xl font-bold mb-4">Why Choose SelectIQ?</h2>
