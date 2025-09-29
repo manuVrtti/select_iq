@@ -2076,7 +2076,7 @@ function StartInterview() {
   const addPenalty = (reason) => {
     setPenalty((p) => {
       const newP = p + 1;
-      if (newP >= 5) {
+      if (newP >= 7) {
         stopInterview(
           `/interview/${interviewInfo?.interviewData?.interview_id}/sorry`
         );
@@ -2150,7 +2150,7 @@ function StartInterview() {
                     faceTimeoutRef.current = setTimeout(() => {
                       addPenalty(warning);
                       faceTimeoutRef.current = null;
-                    }, 2500); // wait 2.5s
+                    }, 1500); // wait 1.5s
                   }
                 } else {
                   setFaceWarning("");
