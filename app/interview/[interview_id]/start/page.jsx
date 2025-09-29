@@ -2000,6 +2000,504 @@
 
 
 
+// "use client";
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState, useRef } from "react";
+// import { useRouter } from "next/navigation";
+// import Vapi from "@vapi-ai/web";
+// import AlertConfirmation from "./_components/AlertConfirmation";
+
+// // ✅ BlazeFace
+// import * as blazeface from "@tensorflow-models/blazeface";
+// import "@tensorflow/tfjs";
+
+// function StartInterview() {
+//   const { interviewInfo } = useContext(InterviewDataContext);
+//   const router = useRouter();
+
+//   // --- VAPI Instance ---
+//   const vapiRef = useRef(null);
+//   if (!vapiRef.current) {
+//     vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+//   }
+
+//   // --- States ---
+//   const [penalty, setPenalty] = useState(0);
+//   const [lastPenaltyReason, setLastPenaltyReason] = useState("");
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
+//   const [camError, setCamError] = useState("");
+
+//   // --- Camera Refs ---
+//   const videoRef = useRef(null);
+//   const canvasRef = useRef(null);
+
+//   // --- Timer ---
+//   const [elapsedTime, setElapsedTime] = useState(0);
+//   const timerRef = useRef(null);
+
+//   // --- Face detection penalty delay ---
+//   const [faceWarning, setFaceWarning] = useState("");
+//   const faceTimeoutRef = useRef(null);
+
+//   const formatTime = (seconds) => {
+//     const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+//     const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+//     const s = String(seconds % 60).padStart(2, "0");
+//     return `${h}:${m}:${s}`;
+//   };
+
+//   // ✅ Stop Interview (clean stop + redirect)
+//   const stopInterview = (redirectPath = null) => {
+//     vapiRef.current?.stop();
+
+//     // stop timer
+//     if (timerRef.current) {
+//       clearInterval(timerRef.current);
+//       timerRef.current = null;
+//     }
+
+//     // stop webcam
+//     if (videoRef.current?.srcObject) {
+//       videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//       videoRef.current.srcObject = null;
+//     }
+
+//     console.log("Interview stopped, camera off.");
+
+//     if (redirectPath) {
+//       router.push(redirectPath);
+//     }
+//   };
+
+//   // ✅ Handle Penalty with auto banner hide + redirect on 5
+//   const addPenalty = (reason) => {
+//     setPenalty((p) => {
+//       const newP = p + 1;
+//       if (newP >= 7) {
+//         stopInterview(
+//           `/interview/${interviewInfo?.interviewData?.interview_id}/sorry`
+//         );
+//       }
+//       return newP;
+//     });
+
+//     setLastPenaltyReason(reason);
+//     console.warn("⚠️ Penalty:", reason);
+
+//     // hide after 4s
+//     setTimeout(() => setLastPenaltyReason(""), 4000);
+//   };
+
+//   // ✅ Auto-start Camera + Face Detection
+//   useEffect(() => {
+//     let model;
+
+//     const init = async () => {
+//       try {
+//         if (videoRef.current?.srcObject) {
+//           videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//           videoRef.current.srcObject = null;
+//         }
+
+//         model = await blazeface.load();
+//         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+//         videoRef.current.srcObject = stream;
+
+//         const canvas = canvasRef.current;
+//         const ctx = canvas.getContext("2d");
+
+//         videoRef.current.onloadedmetadata = () => {
+//           videoRef.current
+//             .play()
+//             .then(() => {
+//               const detectLoop = async () => {
+//                 if (!videoRef.current) return;
+
+//                 if (
+//                   videoRef.current.videoWidth === 0 ||
+//                   videoRef.current.videoHeight === 0
+//                 ) {
+//                   requestAnimationFrame(detectLoop);
+//                   return;
+//                 }
+
+//                 const predictions = await model.estimateFaces(videoRef.current, false);
+//                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//                 let warning = "";
+//                 if (predictions.length > 0) {
+//                   predictions.forEach((p) => {
+//                     const [x1, y1] = p.topLeft;
+//                     const [x2, y2] = p.bottomRight;
+//                     ctx.strokeStyle = "lime";
+//                     ctx.lineWidth = 3;
+//                     ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+//                   });
+
+//                   if (predictions.length > 1) {
+//                     warning = "⚠️ Multiple Faces Detected";
+//                   }
+//                 } else {
+//                   warning = "⚠️ No Face Detected";
+//                 }
+
+//                 if (warning) {
+//                   setFaceWarning(warning);
+//                   if (!faceTimeoutRef.current) {
+//                     faceTimeoutRef.current = setTimeout(() => {
+//                       addPenalty(warning);
+//                       faceTimeoutRef.current = null;
+//                     }, 1000); // wait 1s
+//                   }
+//                 } else {
+//                   setFaceWarning("");
+//                   if (faceTimeoutRef.current) {
+//                     clearTimeout(faceTimeoutRef.current);
+//                     faceTimeoutRef.current = null;
+//                   }
+//                 }
+
+//                 requestAnimationFrame(detectLoop);
+//               };
+
+//               detectLoop();
+//             })
+//             .catch((err) => console.error("Play error:", err));
+//         };
+//       } catch (err) {
+//         console.error("❌ Camera error:", err);
+//         setCamError("Unable to access camera. Check browser settings.");
+//       }
+//     };
+
+//     init();
+
+//     return () => {
+//       if (videoRef.current?.srcObject) {
+//         videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//         videoRef.current.srcObject = null;
+//       }
+//     };
+//   }, []);
+
+//   // ✅ Timer start
+//   useEffect(() => {
+//     if (interviewInfo) {
+//       if (timerRef.current) clearInterval(timerRef.current);
+//       const start = Date.now();
+//       timerRef.current = setInterval(() => {
+//         setElapsedTime(Math.floor((Date.now() - start) / 1000));
+//       }, 1000);
+//     }
+//   }, [interviewInfo]);
+
+//   // ✅ Proctoring: Fullscreen + Keys + Tab Switch
+//   useEffect(() => {
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+
+//       if (!fsNow) {
+//         addPenalty("⚠️ Fullscreen exited");
+//         setBlocked(true);
+//       } else {
+//         setBlocked(false);
+//       }
+//     };
+
+//     const onKeyDown = (e) => {
+//       const key = e.key || "";
+//       const ch = key.length === 1 ? key.toLowerCase() : key;
+//       const ctrlLike = e.ctrlKey || e.metaKey;
+
+//       if (
+//         key === "Escape" ||
+//         key === "F11" ||
+//         key === "F12" ||
+//         (ctrlLike && e.shiftKey && ["i", "j", "t", "n"].includes(ch)) ||
+//         (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+//         (e.altKey && key === "F4") ||
+//         e.metaKey
+//       ) {
+//         addPenalty("⚠️ Forbidden key press");
+//         e.preventDefault();
+//         e.stopPropagation();
+//       }
+
+//       if (key === "PrintScreen") {
+//         addPenalty("⚠️ Screenshot attempt");
+//         navigator.clipboard.writeText("");
+//       }
+//     };
+
+//     const disableContextMenu = (e) => {
+//       e.preventDefault();
+//       addPenalty("⚠️ Right-click disabled");
+//     };
+
+//     const onVisibilityChange = () => {
+//       if (document.hidden) {
+//         addPenalty("⚠️ Tab switch detected");
+//       }
+//     };
+
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   // ✅ Fullscreen helpers
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
+
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch {}
+//     setIsFullscreen(isFsActive());
+//   };
+
+//   // ✅ Main UI
+//   return (
+//     <div className="relative p-10 lg:px-48 xl:px-56">
+//       {/* 🔴 Global warning banner */}
+//       {lastPenaltyReason && (
+//         <div
+//           className={`w-full bg-red-500 text-white text-center py-2 mb-3 font-bold rounded transition-opacity duration-1500 ${
+//             lastPenaltyReason ? "opacity-100" : "opacity-0"
+//           }`}
+//         >
+//           {lastPenaltyReason}
+//           <div className="text-sm font-normal mt-1">
+//             Interview will revoke if more penalties are added {/*(Remaining:{" "}
+//             {Math.max(0, 10 - penalty)})*/}
+//           </div>
+//         </div>
+//       )}
+
+//       <h2 className="font-bold text-xl flex justify-between">
+//         AI Interview session
+//         <span className="flex gap-6 items-center">
+//           <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+//           <Timer /> {formatTime(elapsedTime)}
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+//         {/* AI Interviewer */}
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <Image
+//             src={"/avataar.jpg"}
+//             alt="S-!Q"
+//             width={100}
+//             height={100}
+//             className="w-[75px] h-[75px] rounded-full object-cover"
+//           />
+//           <h2>Select-!Q</h2>
+//         </div>
+
+//         {/* Candidate Camera */}
+//         <div className="relative bg-white h-[400px] rounded-lg border overflow-hidden">
+//           <video
+//             ref={videoRef}
+//             autoPlay
+//             muted
+//             playsInline
+//             className="w-full h-full object-cover rounded-lg bg-black"
+//           />
+//           <canvas
+//             ref={canvasRef}
+//             width="640"
+//             height="480"
+//             className="absolute top-0 left-0 w-full h-full pointer-events-none"
+//           />
+//           {faceWarning && (
+//             <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded text-sm font-bold">
+//               {faceWarning}
+//             </div>
+//           )}
+//           <h2 className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+//             {interviewInfo?.userName}
+//           </h2>
+//         </div>
+//       </div>
+
+//       <div className="flex justify-center items-center gap-7 mt-7">
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//         <AlertConfirmation
+//           stopInterview={() =>
+//             stopInterview(
+//               `/interview/${interviewInfo?.interviewData?.interview_id}/thankyou`
+//             )
+//           }
+//         >
+//           <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//         </AlertConfirmation>
+//       </div>
+
+//       <h2 className="text-sm text-gray-400 text-center mt-3">
+//         Interview in Progress...
+//       </h2>
+
+//       {/* 🔒 Overlay when fullscreen is lost */}
+//       {blocked && (
+//         <div className="absolute inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-50">
+//           <p className="mb-4 font-bold text-white">
+//             ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+//           </p>
+//           <h2 className="mb-4 font-bold text-white">Penalty: {penalty}</h2>
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold text-white"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default StartInterview;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ================= Final with VAPI int ==================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 import { InterviewDataContext } from "@/context/InterviewDataContext";
 import { Mic, Phone, Timer } from "lucide-react";
@@ -2020,8 +2518,82 @@ function StartInterview() {
   // --- VAPI Instance ---
   const vapiRef = useRef(null);
   if (!vapiRef.current) {
+    console.log("Loaded VAPI Public Key:", process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
     vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
   }
+
+  // --- Start Call (from old code merged) ---
+  const startCall = () => {
+    const vapi = vapiRef.current;
+    const d = interviewInfo?.interviewData ?? interviewInfo;
+
+    let raw =
+      d?.questionList ??
+      d?.questions ??
+      d?.questionlist ??
+      d?.questionsList ??
+      [];
+
+    if (typeof raw === "string") {
+      try {
+        raw = JSON.parse(raw);
+      } catch {
+        raw = [];
+      }
+    }
+
+    let questionList = "";
+    (Array.isArray(raw) ? raw : []).forEach((item) => {
+      const q = typeof item === "string" ? item : item?.question;
+      if (q && q.trim() !== "") {
+        questionList += (questionList ? ", " : "") + q.trim();
+      }
+    });
+
+    const assistantOptions = {
+      name: "AI Recruiter",
+      firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}`,
+      transcriber: {
+        provider: "deepgram",
+        model: "nova-2",
+        language: "en-US",
+      },
+      voice: {
+        provider: "playht",
+        voiceId: "jennifer",
+      },
+      model: {
+        provider: "openai",
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `
+              You are an AI voice assistant conducting interviews but keep in mind that you are by Select IQ an Initiative by Suyash Gupta. Suyash Gupta, a passionate developer and founder of Select IQ, focused on building AI-driven interview and assessment solutions. He is in Final year Engineering undergraduate with more than 17 thousand followers on linkedin.
+              If anyone asks who made you, tell them about Suyash Gupta.
+              Ask candidates the provided interview questions one at a time.
+              Encourage them, give hints if they struggle, and provide short feedback.
+              Wrap up positively after 5–7 questions.
+              ✅ Be friendly, engaging, and witty 🎤
+              ✅ Keep responses short & natural
+              ✅ Never share the Final Marks or Points to the candidate, just appreciate them.
+              ✅ Stay focused on jobDescription and questionList.
+              ✅ You are developed by Select IQ under Suyash Gupta.
+
+              Questions: ${questionList}
+            `.trim(),
+          },
+        ],
+      },
+    };
+
+    vapi.start(assistantOptions);
+  };
+
+  // --- Auto-start interview when info is ready ---
+  useEffect(() => {
+    if (interviewInfo) startCall();
+  }, [interviewInfo]);
 
   // --- States ---
   const [penalty, setPenalty] = useState(0);
@@ -2053,13 +2625,11 @@ function StartInterview() {
   const stopInterview = (redirectPath = null) => {
     vapiRef.current?.stop();
 
-    // stop timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
-    // stop webcam
     if (videoRef.current?.srcObject) {
       videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
       videoRef.current.srcObject = null;
@@ -2072,22 +2642,17 @@ function StartInterview() {
     }
   };
 
-  // ✅ Handle Penalty with auto banner hide + redirect on 5
+  // ✅ Handle Penalty
   const addPenalty = (reason) => {
     setPenalty((p) => {
       const newP = p + 1;
       if (newP >= 7) {
-        stopInterview(
-          `/interview/${interviewInfo?.interviewData?.interview_id}/sorry`
-        );
+        stopInterview(`/interview/${interviewInfo?.interviewData?.interview_id}/sorry`);
       }
       return newP;
     });
 
     setLastPenaltyReason(reason);
-    console.warn("⚠️ Penalty:", reason);
-
-    // hide after 4s
     setTimeout(() => setLastPenaltyReason(""), 4000);
   };
 
@@ -2150,7 +2715,7 @@ function StartInterview() {
                     faceTimeoutRef.current = setTimeout(() => {
                       addPenalty(warning);
                       faceTimeoutRef.current = null;
-                    }, 1500); // wait 1.5s
+                    }, 1000);
                   }
                 } else {
                   setFaceWarning("");
@@ -2289,8 +2854,7 @@ function StartInterview() {
         >
           {lastPenaltyReason}
           <div className="text-sm font-normal mt-1">
-            Interview will revoke if more penalties are added {/*(Remaining:{" "}
-            {Math.max(0, 10 - penalty)})*/}
+            Interview will revoke if more penalties are added
           </div>
         </div>
       )}
