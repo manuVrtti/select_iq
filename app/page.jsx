@@ -1529,7 +1529,7 @@ export default function Home() {
   useEffect(() => {
     const lenis = new Lenis({
       smooth: true,
-      lerp: 0.1,
+      lerp: 0.06,
     });
 
     function raf(time) {
@@ -1553,7 +1553,7 @@ export default function Home() {
     // parallax effect on cards
     gsap.utils.toArray(".parallax-card").forEach((card) => {
       gsap.to(card, {
-        yPercent: -30,
+        yPercent: -40,
         scrollTrigger: { trigger: card, scrub: true },
       });
     });
@@ -1662,7 +1662,7 @@ export default function Home() {
             alt="Features"
             width={480}
             height={320}
-            className="rounded-xl shadow-lg parallax-card mt-16 ml-13"
+            className="rounded-xl  parallax-card mt-16 ml-13"
           />
         </div>
       </section>

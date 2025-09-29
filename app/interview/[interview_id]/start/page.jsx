@@ -892,289 +892,769 @@
 
 
 //======= Fully Final -001=====
-"use client";
-import { InterviewDataContext } from "@/context/InterviewDataContext";
-import { Mic, Phone, Timer } from "lucide-react";
-import Image from "next/image";
-import React, { useContext, useEffect, useState, useRef } from "react";
-import Vapi from "@vapi-ai/web";
-import AlertConfirmation from "./_components/AlertConfirmation";
-
-function StartInterview() {
-  const { interviewInfo } = useContext(InterviewDataContext);
-
-  // ✅ Persist Vapi instance
-  const vapiRef = useRef(null);
-  if (!vapiRef.current) {
-    console.log("Loaded VAPI Public Key:", process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
-    vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
-  }
-
-  // ✅ Start interview when interviewInfo is ready
-  useEffect(() => {
-    if (interviewInfo) startCall();
-  }, [interviewInfo]);
-
-  const startCall = () => {
-    const vapi = vapiRef.current;
-    const d = interviewInfo?.interviewData ?? interviewInfo;
-
-    let raw =
-      d?.questionList ??
-      d?.questions ??
-      d?.questionlist ??
-      d?.questionsList ??
-      [];
-
-    if (typeof raw === "string") {
-      try {
-        raw = JSON.parse(raw);
-      } catch {
-        raw = [];
-      }
-    }
-
-    let questionList = "";
-    (Array.isArray(raw) ? raw : []).forEach((item) => {
-      const q = typeof item === "string" ? item : item?.question;
-      if (q && q.trim() !== "") {
-        questionList += (questionList ? ", " : "") + q.trim();
-      }
-    });
-
-    const assistantOptions = {
-      name: "AI Recruiter",
-      firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}`,
-      transcriber: {
-        provider: "deepgram",
-        model: "nova-2",
-        language: "en-US",
-      },
-      voice: {
-        provider: "playht",
-        voiceId: "jennifer",
-      },
-      model: {
-        provider: "openai",
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: `
-              You are an AI voice assistant conducting interviews but keep in mink that you are by SelectIQ an Initiative by Suyash Gupta.
-              If anyone ask that who had made you so tell them about Suyash Gupta.
-              Ask candidates the provided interview questions one at a time.
-              Encourage them, give hints if they struggle, and provide short feedback.
-              Wrap up positively after 5–7 questions.
-              ✅ Be friendly, engaging, and witty 🎤
-              ✅ Keep responses short & natural
-              ✅ Never share the Final Marks or Points to the candidate, just appriciate them. 
-              ✅ Stay focused on jobDescription and questionList.
-              ✅ You are developed by Select IQ under Suyash Gupta.
 
 
-              Questions: ${questionList}
-            `.trim(),
-          },
-        ],
-      },
-    };
 
-    vapi.start(assistantOptions);
-  };
 
-  // ✅ Stop interview when phone button clicked
-  const stopInterview = () => {
-    vapiRef.current?.stop();
-    console.log("Interview stopped.");
-  };
 
-  // --- Penalties ---
-  const [penalty, setPenalty] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [blocked, setBlocked] = useState(false);
 
-  const isFsActive = () =>
-    !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
-    );
+// "use client";
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState, useRef } from "react";
+// import Vapi from "@vapi-ai/web";
+// import AlertConfirmation from "./_components/AlertConfirmation";
 
-  const tryRequestFs = async () => {
-    const el = document.documentElement;
-    try {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-      else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
-      else if (el.msRequestFullscreen) await el.msRequestFullscreen();
-    } catch {}
-    setIsFullscreen(isFsActive());
-  };
+// function StartInterview() {
+//   const { interviewInfo } = useContext(InterviewDataContext);
 
-  // 🔎 Security checks
-  const detectExtensions = () => {
-    const suspiciousScripts = Array.from(document.scripts).filter(
-      (s) => s.src && s.src.startsWith("chrome-extension://")
-    );
-    const suspiciousKeys = Object.keys(window).filter(
-      (key) =>
-        key.toLowerCase().includes("extension") ||
-        key.toLowerCase().includes("gpt") ||
-        key.toLowerCase().includes("grammarly")
-    );
+//   // ✅ Persist Vapi instance
+//   const vapiRef = useRef(null);
+//   if (!vapiRef.current) {
+//     console.log("Loaded VAPI Public Key:", process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+//     vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+//   }
 
-    if (suspiciousScripts.length > 0 || suspiciousKeys.length > 0) {
-      alert("⚠️ Extensions detected! Please turn them off for a fair interview.");
-    }
-  };
+//   // ✅ Start interview when interviewInfo is ready
+//   useEffect(() => {
+//     if (interviewInfo) startCall();
+//   }, [interviewInfo]);
 
-  useEffect(() => {
-    setIsFullscreen(isFsActive());
+//   const startCall = () => {
+//     const vapi = vapiRef.current;
+//     const d = interviewInfo?.interviewData ?? interviewInfo;
 
-    const onFsChange = () => {
-      const fsNow = isFsActive();
-      setIsFullscreen(fsNow);
-      setBlocked(!fsNow);
-      if (!fsNow) {
-        setPenalty((p) => p + 1);
-        alert("⚠️ Fullscreen exited. Penalty added.");
-      }
-    };
+//     let raw =
+//       d?.questionList ??
+//       d?.questions ??
+//       d?.questionlist ??
+//       d?.questionsList ??
+//       [];
 
-    detectExtensions();
+//     if (typeof raw === "string") {
+//       try {
+//         raw = JSON.parse(raw);
+//       } catch {
+//         raw = [];
+//       }
+//     }
 
-    document.addEventListener("fullscreenchange", onFsChange);
-    document.addEventListener("webkitfullscreenchange", onFsChange);
-    document.addEventListener("mozfullscreenchange", onFsChange);
-    document.addEventListener("MSFullscreenChange", onFsChange);
+//     let questionList = "";
+//     (Array.isArray(raw) ? raw : []).forEach((item) => {
+//       const q = typeof item === "string" ? item : item?.question;
+//       if (q && q.trim() !== "") {
+//         questionList += (questionList ? ", " : "") + q.trim();
+//       }
+//     });
 
-    const onKeyDown = (e) => {
-      const key = e.key || "";
-      const ch = key.length === 1 ? key.toLowerCase() : key;
-      const ctrlLike = e.ctrlKey || e.metaKey;
+//     const assistantOptions = {
+//       name: "AI Recruiter",
+//       firstMessage: `Hi ${interviewInfo?.userName}, how are you? Ready for your interview on ${interviewInfo?.interviewData?.jobPosition}`,
+//       transcriber: {
+//         provider: "deepgram",
+//         model: "nova-2",
+//         language: "en-US",
+//       },
+//       voice: {
+//         provider: "playht",
+//         voiceId: "jennifer",
+//       },
+//       model: {
+//         provider: "openai",
+//         model: "gpt-4",
+//         messages: [
+//           {
+//             role: "system",
+//             content: `
+//               You are an AI voice assistant conducting interviews but keep in mink that you are by SelectIQ an Initiative by Suyash Gupta.
+//               If anyone ask that who had made you so tell them about Suyash Gupta.
+//               Ask candidates the provided interview questions one at a time.
+//               Encourage them, give hints if they struggle, and provide short feedback.
+//               Wrap up positively after 5–7 questions.
+//               ✅ Be friendly, engaging, and witty 🎤
+//               ✅ Keep responses short & natural
+//               ✅ Never share the Final Marks or Points to the candidate, just appriciate them. 
+//               ✅ Stay focused on jobDescription and questionList.
+//               ✅ You are developed by Select IQ under Suyash Gupta.
 
-      if (
-        key === "" ||
-        key === "Escape" ||
-        key === "F11" ||
-        key === "F12" ||
-        (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) ||
-        (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
-        (ctrlLike && ["1","2","3","4","5","6","7","8","9","0"].includes(ch)) ||
-        (e.altKey && key === "F4") ||
-        (e.altKey && key === " ") ||
-        e.metaKey
-      ) {
-        setPenalty((p) => p + 1);
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
-      }
 
-      if (key === "PrintScreen") {
-        setPenalty((p) => p + 1);
-        if (e.cancelable) e.preventDefault();
-        navigator.clipboard.writeText("");
-        alert("⚠️ Screenshots disabled. Penalty added.");
-      }
-    };
+//               Questions: ${questionList}
+//             `.trim(),
+//           },
+//         ],
+//       },
+//     };
 
-    const disableContextMenu = (e) => {
-      e.preventDefault();
-      setPenalty((p) => p + 1);
-    };
+//     vapi.start(assistantOptions);
+//   };
 
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        setPenalty((p) => p + 1);
-        alert("⚠️ You switched tabs or minimized. Penalty added.");
-      }
-    };
+//   // ✅ Stop interview when phone button clicked
+//   const stopInterview = () => {
+//     vapiRef.current?.stop();
+//     console.log("Interview stopped.");
+//   };
 
-    document.addEventListener("keydown", onKeyDown, true);
-    document.addEventListener("contextmenu", disableContextMenu);
-    document.addEventListener("visibilitychange", onVisibilityChange);
+//   // --- Penalties ---
+//   const [penalty, setPenalty] = useState(0);
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
 
-    return () => {
-      document.removeEventListener("fullscreenchange", onFsChange);
-      document.removeEventListener("webkitfullscreenchange", onFsChange);
-      document.removeEventListener("mozfullscreenchange", onFsChange);
-      document.removeEventListener("MSFullscreenChange", onFsChange);
-      document.removeEventListener("keydown", onKeyDown, true);
-      document.removeEventListener("contextmenu", disableContextMenu);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, []);
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
 
-  // If not fullscreen → block screen
-  if (!isFullscreen || blocked) {
-    return (
-      <div className="w-screen h-screen bg-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <p className="mb-4 font-bold">
-            ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
-          </p>
-          <h2 className="mb-4 font-bold">Penalty: {penalty}</h2>
-          <button
-            onClick={tryRequestFs}
-            className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
-          >
-            Re-Enter Fullscreen
-          </button>
-        </div>
-      </div>
-    );
-  }
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch {}
+//     setIsFullscreen(isFsActive());
+//   };
 
-  // ✅ Main UI
-  return (
-    <div className="p-10 lg:px-48 xl:px-56">
-      <h2 className="font-bold text-xl flex justify-between">
-        AI Interview session
-        <span className="flex gap-6 items-center">
-          <span className="text-red-600 font-bold">Penalty: {penalty}</span>
-          <Timer /> 00:00:00
-        </span>
-      </h2>
+//   // 🔎 Security checks
+//   const detectExtensions = () => {
+//     const suspiciousScripts = Array.from(document.scripts).filter(
+//       (s) => s.src && s.src.startsWith("chrome-extension://")
+//     );
+//     const suspiciousKeys = Object.keys(window).filter(
+//       (key) =>
+//         key.toLowerCase().includes("extension") ||
+//         key.toLowerCase().includes("gpt") ||
+//         key.toLowerCase().includes("grammarly")
+//     );
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
-        <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-          <Image
-            src={"/avataar.jpg"}
-            alt="S-!Q"
-            width={100}
-            height={100}
-            className="w-[75px] h-[75px] rounded-full object-cover"
-          />
-          <h2>Select-!Q</h2>
-        </div>
+//     if (suspiciousScripts.length > 0 || suspiciousKeys.length > 0) {
+//       alert("⚠️ Extensions detected! Please turn them off for a fair interview.");
+//     }
+//   };
 
-        <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
-          <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
-            {interviewInfo?.userName[0]}
-          </h2>
-          <h2>{interviewInfo?.userName}</h2>
-        </div>
-      </div>
+//   useEffect(() => {
+//     setIsFullscreen(isFsActive());
 
-      <div className="flex justify-center items-center gap-7 mt-7">
-        <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
-        <AlertConfirmation stopInterview={stopInterview}>
-          <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
-        </AlertConfirmation>
-      </div>
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+//       setBlocked(!fsNow);
+//       if (!fsNow) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ Fullscreen exited. Penalty added.");
+//       }
+//     };
 
-      <h2 className="text-sm text-gray-400 text-center mt-3">
-        Interview in Progress...
-      </h2>
-    </div>
-  );
-}
+//     detectExtensions();
 
-export default StartInterview;
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("webkitfullscreenchange", onFsChange);
+//     document.addEventListener("mozfullscreenchange", onFsChange);
+//     document.addEventListener("MSFullscreenChange", onFsChange);
+
+//     const onKeyDown = (e) => {
+//       const key = e.key || "";
+//       const ch = key.length === 1 ? key.toLowerCase() : key;
+//       const ctrlLike = e.ctrlKey || e.metaKey;
+
+//       if (
+//         key === "" ||
+//         key === "Escape" ||
+//         key === "F11" ||
+//         key === "F12" ||
+//         (ctrlLike && e.shiftKey && (ch === "i" || ch === "j" || ch === "t" || ch === "n")) ||
+//         (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+//         (ctrlLike && ["1","2","3","4","5","6","7","8","9","0"].includes(ch)) ||
+//         (e.altKey && key === "F4") ||
+//         (e.altKey && key === " ") ||
+//         e.metaKey
+//       ) {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         e.stopPropagation();
+//       }
+
+//       if (key === "PrintScreen") {
+//         setPenalty((p) => p + 1);
+//         if (e.cancelable) e.preventDefault();
+//         navigator.clipboard.writeText("");
+//         alert("⚠️ Screenshots disabled. Penalty added.");
+//       }
+//     };
+
+//     const disableContextMenu = (e) => {
+//       e.preventDefault();
+//       setPenalty((p) => p + 1);
+//     };
+
+//     const onVisibilityChange = () => {
+//       if (document.hidden) {
+//         setPenalty((p) => p + 1);
+//         alert("⚠️ You switched tabs or minimized. Penalty added.");
+//       }
+//     };
+
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("webkitfullscreenchange", onFsChange);
+//       document.removeEventListener("mozfullscreenchange", onFsChange);
+//       document.removeEventListener("MSFullscreenChange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   // If not fullscreen → block screen
+//   if (!isFullscreen || blocked) {
+//     return (
+//       <div className="w-screen h-screen bg-black flex items-center justify-center">
+//         <div className="text-center text-white">
+//           <p className="mb-4 font-bold">
+//             ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+//           </p>
+//           <h2 className="mb-4 font-bold">Penalty: {penalty}</h2>
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // ✅ Main UI
+//   return (
+//     <div className="p-10 lg:px-48 xl:px-56">
+//       <h2 className="font-bold text-xl flex justify-between">
+//         AI Interview session
+//         <span className="flex gap-6 items-center">
+//           <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+//           <Timer /> 00:00:00
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <Image
+//             src={"/avataar.jpg"}
+//             alt="S-!Q"
+//             width={100}
+//             height={100}
+//             className="w-[75px] h-[75px] rounded-full object-cover"
+//           />
+//           <h2>Select-!Q</h2>
+//         </div>
+
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <h2 className="text-3xl bg-primary text-white p-4 rounded-full px-7 ">
+//             {interviewInfo?.userName[0]}
+//           </h2>
+//           <h2>{interviewInfo?.userName}</h2>
+//         </div>
+//       </div>
+
+//       <div className="flex justify-center items-center gap-7 mt-7">
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//         <AlertConfirmation stopInterview={stopInterview}>
+//           <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//         </AlertConfirmation>
+//       </div>
+
+//       <h2 className="text-sm text-gray-400 text-center mt-3">
+//         Interview in Progress...
+//       </h2>
+//     </div>
+//   );
+// }
+
+// export default StartInterview;
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+//======= ⏫⏫🔼🔼⏫⏫ ===========
+
+
+
+// "use client";
+// import { InterviewDataContext } from "@/context/InterviewDataContext";
+// import { Mic, Phone, Timer } from "lucide-react";
+// import Image from "next/image";
+// import React, { useContext, useEffect, useState, useRef } from "react";
+// import { useRouter } from "next/navigation";
+// import Vapi from "@vapi-ai/web";
+// import AlertConfirmation from "./_components/AlertConfirmation";
+
+// // ✅ BlazeFace
+// import * as blazeface from "@tensorflow-models/blazeface";
+// import "@tensorflow/tfjs";
+
+// function StartInterview() {
+//   const { interviewInfo } = useContext(InterviewDataContext);
+//   const router = useRouter();
+
+//   // --- VAPI Instance ---
+//   const vapiRef = useRef(null);
+//   if (!vapiRef.current) {
+//     vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+//   }
+
+//   // --- States ---
+//   const [penalty, setPenalty] = useState(0);
+//   const [lastPenaltyReason, setLastPenaltyReason] = useState("");
+//   const [isFullscreen, setIsFullscreen] = useState(false);
+//   const [blocked, setBlocked] = useState(false);
+//   const [camError, setCamError] = useState("");
+
+//   // --- Camera Refs ---
+//   const videoRef = useRef(null);
+//   const canvasRef = useRef(null);
+
+//   // --- Timer ---
+//   const [elapsedTime, setElapsedTime] = useState(0);
+//   const timerRef = useRef(null);
+
+//   // --- Face detection penalty delay ---
+//   const [faceWarning, setFaceWarning] = useState("");
+//   const faceTimeoutRef = useRef(null);
+
+//   const formatTime = (seconds) => {
+//     const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+//     const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+//     const s = String(seconds % 60).padStart(2, "0");
+//     return `${h}:${m}:${s}`;
+//   };
+
+//   // ✅ Handle Penalty with auto banner hide + redirect on 10
+//   const addPenalty = (reason) => {
+//     setPenalty((p) => {
+//       const newP = p + 1;
+//       if (newP >= 5) {
+//         stopInterview(true); // redirect if too many penalties
+//       }
+//       return newP;
+//     });
+
+//     setLastPenaltyReason(reason);
+//     console.warn("⚠️ Penalty:", reason);
+
+//     // hide after 3s
+//     setTimeout(() => setLastPenaltyReason(""), 3000);
+//   };
+
+//   // ✅ Auto-start Camera + Face Detection
+//   useEffect(() => {
+//     let model;
+
+//     const init = async () => {
+//       try {
+//         if (videoRef.current?.srcObject) {
+//           videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//           videoRef.current.srcObject = null;
+//         }
+
+//         model = await blazeface.load();
+//         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+//         videoRef.current.srcObject = stream;
+
+//         const canvas = canvasRef.current;
+//         const ctx = canvas.getContext("2d");
+
+//         videoRef.current.onloadedmetadata = () => {
+//           videoRef.current
+//             .play()
+//             .then(() => {
+//               const detectLoop = async () => {
+//                 if (!videoRef.current) return;
+
+//                 if (
+//                   videoRef.current.videoWidth === 0 ||
+//                   videoRef.current.videoHeight === 0
+//                 ) {
+//                   requestAnimationFrame(detectLoop);
+//                   return;
+//                 }
+
+//                 const predictions = await model.estimateFaces(videoRef.current, false);
+//                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//                 let warning = "";
+//                 if (predictions.length > 0) {
+//                   predictions.forEach((p) => {
+//                     const [x1, y1] = p.topLeft;
+//                     const [x2, y2] = p.bottomRight;
+//                     ctx.strokeStyle = "lime";
+//                     ctx.lineWidth = 3;
+//                     ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+//                   });
+
+//                   if (predictions.length > 1) {
+//                     warning = "⚠️ Multiple Faces Detected";
+//                   }
+//                 } else {
+//                   warning = "⚠️ No Face Detected";
+//                 }
+
+//                 if (warning) {
+//                   setFaceWarning(warning);
+//                   if (!faceTimeoutRef.current) {
+//                     faceTimeoutRef.current = setTimeout(() => {
+//                       addPenalty(warning);
+//                       faceTimeoutRef.current = null;
+//                     }, 2500); // wait 2.5s
+//                   }
+//                 } else {
+//                   setFaceWarning("");
+//                   if (faceTimeoutRef.current) {
+//                     clearTimeout(faceTimeoutRef.current);
+//                     faceTimeoutRef.current = null;
+//                   }
+//                 }
+
+//                 requestAnimationFrame(detectLoop);
+//               };
+
+//               detectLoop();
+//             })
+//             .catch((err) => console.error("Play error:", err));
+//         };
+//       } catch (err) {
+//         console.error("❌ Camera error:", err);
+//         setCamError("Unable to access camera. Check browser settings.");
+//       }
+//     };
+
+//     init();
+
+//     return () => {
+//       if (videoRef.current?.srcObject) {
+//         videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//         videoRef.current.srcObject = null;
+//       }
+//     };
+//   }, []);
+
+//   // ✅ Timer start
+//   useEffect(() => {
+//     if (interviewInfo) {
+//       if (timerRef.current) clearInterval(timerRef.current);
+//       const start = Date.now();
+//       timerRef.current = setInterval(() => {
+//         setElapsedTime(Math.floor((Date.now() - start) / 1000));
+//       }, 1000);
+//     }
+//   }, [interviewInfo]);
+
+//   // ✅ Stop Interview (cut call OR too many penalties)
+//   const stopInterview = (redirect = false) => {
+//     vapiRef.current?.stop();
+
+//     // stop timer
+//     if (timerRef.current) {
+//       clearInterval(timerRef.current);
+//       timerRef.current = null;
+//     }
+
+//     // stop webcam
+//     if (videoRef.current?.srcObject) {
+//       videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+//       videoRef.current.srcObject = null;
+//     }
+
+//     console.log("Interview stopped, camera off.");
+
+//     if (redirect) {
+//     // ✅ redirect with dynamic interview_id
+//     router.push(`/interview/${interviewInfo?.interviewData?.interview_id}/thankyou`);
+//   }
+// };
+
+//   // ✅ Proctoring: Fullscreen + Keys + Tab Switch
+//   useEffect(() => {
+//     const onFsChange = () => {
+//       const fsNow = isFsActive();
+//       setIsFullscreen(fsNow);
+
+//       if (!fsNow) {
+//         addPenalty("⚠️ Fullscreen exited");
+//         setBlocked(true);
+//       } else {
+//         setBlocked(false);
+//       }
+//     };
+
+//     const onKeyDown = (e) => {
+//       const key = e.key || "";
+//       const ch = key.length === 1 ? key.toLowerCase() : key;
+//       const ctrlLike = e.ctrlKey || e.metaKey;
+
+//       if (
+//         key === "Escape" ||
+//         key === "F11" ||
+//         key === "F12" ||
+//         (ctrlLike && e.shiftKey && ["i", "j", "t", "n"].includes(ch)) ||
+//         (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+//         (e.altKey && key === "F4") ||
+//         e.metaKey
+//       ) {
+//         addPenalty("⚠️ Forbidden key press");
+//         e.preventDefault();
+//         e.stopPropagation();
+//       }
+
+//       if (key === "PrintScreen") {
+//         addPenalty("⚠️ Screenshot attempt");
+//         navigator.clipboard.writeText("");
+//       }
+//     };
+
+//     const disableContextMenu = (e) => {
+//       e.preventDefault();
+//       addPenalty("⚠️ Right-click disabled");
+//     };
+
+//     const onVisibilityChange = () => {
+//       if (document.hidden) {
+//         addPenalty("⚠️ Tab switch detected");
+//       }
+//     };
+
+//     document.addEventListener("fullscreenchange", onFsChange);
+//     document.addEventListener("keydown", onKeyDown, true);
+//     document.addEventListener("contextmenu", disableContextMenu);
+//     document.addEventListener("visibilitychange", onVisibilityChange);
+
+//     return () => {
+//       document.removeEventListener("fullscreenchange", onFsChange);
+//       document.removeEventListener("keydown", onKeyDown, true);
+//       document.removeEventListener("contextmenu", disableContextMenu);
+//       document.removeEventListener("visibilitychange", onVisibilityChange);
+//     };
+//   }, []);
+
+//   // ✅ Fullscreen helpers
+//   const isFsActive = () =>
+//     !!(
+//       document.fullscreenElement ||
+//       document.webkitFullscreenElement ||
+//       document.mozFullScreenElement ||
+//       document.msFullscreenElement
+//     );
+
+//   const tryRequestFs = async () => {
+//     const el = document.documentElement;
+//     try {
+//       if (el.requestFullscreen) await el.requestFullscreen();
+//       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+//       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+//       else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+//     } catch {}
+//     setIsFullscreen(isFsActive());
+//   };
+
+//   // ✅ Main UI
+//   return (
+//     <div className="relative p-10 lg:px-48 xl:px-56">
+//       {/* 🔴 Global warning banner */}
+//       {lastPenaltyReason && (
+//       <div
+//         className={`w-full bg-red-400 text-white text-center py-2 mb-3 font-bold rounded animate-pulse transition-opacity duration-1000 ${
+//           lastPenaltyReason ?  "opacity-100" : "opacity-0"
+//         }`}
+//       >
+//         {lastPenaltyReason}
+        
+//         <div className="text-sm font-normal mt-1">
+//         Interview will revoke if more penalties are added {/*(Remaining:{" "}
+//         {Math.max(0, 10 - penalty)})*/}
+//       </div>
+
+//       </div>
+
+
+//       )}
+
+//       <h2 className="font-bold text-xl flex justify-between">
+//         AI Interview session
+//         <span className="flex gap-6 items-center">
+//           <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+//           <Timer /> {formatTime(elapsedTime)}
+//         </span>
+//       </h2>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+//         {/* AI Interviewer */}
+//         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+//           <Image
+//             src={"/avataar.jpg"}
+//             alt="S-!Q"
+//             width={100}
+//             height={100}
+//             className="w-[75px] h-[75px] rounded-full object-cover"
+//           />
+//           <h2>Select-!Q</h2>
+//         </div>
+
+//         {/* Candidate Camera */}
+//         <div className="relative bg-white h-[400px] rounded-lg border overflow-hidden">
+//           <video
+//             ref={videoRef}
+//             autoPlay
+//             muted
+//             playsInline
+//             className="w-full h-full object-cover rounded-lg bg-black"
+//           />
+//           <canvas
+//             ref={canvasRef}
+//             width="640"
+//             height="480"
+//             className="absolute top-0 left-0 w-full h-full pointer-events-none"
+//           />
+//           {faceWarning && (
+//             <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded text-sm font-bold">
+//               {faceWarning}
+//             </div>
+//           )}
+//           <h2 className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+//             {interviewInfo?.userName}
+//           </h2>
+//         </div>
+//       </div>
+
+//       <div className="flex justify-center items-center gap-7 mt-7">
+//         <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+//         <AlertConfirmation stopInterview={() => stopInterview(true)}>
+//           <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+//         </AlertConfirmation>
+//       </div>
+
+//       <h2 className="text-sm text-gray-400 text-center mt-3">
+//         Interview in Progress...
+//       </h2>
+
+//       {/* 🔒 Overlay when fullscreen is lost */}
+//       {blocked && (
+//         <div className="absolute inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-50">
+//           <p className="mb-4 font-bold text-white">
+//             ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+//           </p>
+//           <h2 className="mb-4 font-bold text-white">Penalty: {penalty}</h2>
+//           <button
+//             onClick={tryRequestFs}
+//             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold text-white"
+//           >
+//             Re-Enter Fullscreen
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default StartInterview;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1193,6 +1673,17 @@ export default StartInterview;
 
 
 // ==========Fully Final- 002=========
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1494,3 +1985,397 @@ export default StartInterview;
 
 // export default StartInterview;
 
+
+
+
+//============= FINAL 1200 [Line no. ke Baad] yhi final hai =============
+
+
+
+
+
+
+
+
+
+
+
+"use client";
+import { InterviewDataContext } from "@/context/InterviewDataContext";
+import { Mic, Phone, Timer } from "lucide-react";
+import Image from "next/image";
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Vapi from "@vapi-ai/web";
+import AlertConfirmation from "./_components/AlertConfirmation";
+
+// ✅ BlazeFace
+import * as blazeface from "@tensorflow-models/blazeface";
+import "@tensorflow/tfjs";
+
+function StartInterview() {
+  const { interviewInfo } = useContext(InterviewDataContext);
+  const router = useRouter();
+
+  // --- VAPI Instance ---
+  const vapiRef = useRef(null);
+  if (!vapiRef.current) {
+    vapiRef.current = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+  }
+
+  // --- States ---
+  const [penalty, setPenalty] = useState(0);
+  const [lastPenaltyReason, setLastPenaltyReason] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [camError, setCamError] = useState("");
+
+  // --- Camera Refs ---
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  // --- Timer ---
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef(null);
+
+  // --- Face detection penalty delay ---
+  const [faceWarning, setFaceWarning] = useState("");
+  const faceTimeoutRef = useRef(null);
+
+  const formatTime = (seconds) => {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+    const s = String(seconds % 60).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
+  // ✅ Stop Interview (clean stop + redirect)
+  const stopInterview = (redirectPath = null) => {
+    vapiRef.current?.stop();
+
+    // stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // stop webcam
+    if (videoRef.current?.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      videoRef.current.srcObject = null;
+    }
+
+    console.log("Interview stopped, camera off.");
+
+    if (redirectPath) {
+      router.push(redirectPath);
+    }
+  };
+
+  // ✅ Handle Penalty with auto banner hide + redirect on 5
+  const addPenalty = (reason) => {
+    setPenalty((p) => {
+      const newP = p + 1;
+      if (newP >= 5) {
+        stopInterview(
+          `/interview/${interviewInfo?.interviewData?.interview_id}/sorry`
+        );
+      }
+      return newP;
+    });
+
+    setLastPenaltyReason(reason);
+    console.warn("⚠️ Penalty:", reason);
+
+    // hide after 4s
+    setTimeout(() => setLastPenaltyReason(""), 4000);
+  };
+
+  // ✅ Auto-start Camera + Face Detection
+  useEffect(() => {
+    let model;
+
+    const init = async () => {
+      try {
+        if (videoRef.current?.srcObject) {
+          videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+          videoRef.current.srcObject = null;
+        }
+
+        model = await blazeface.load();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoRef.current.srcObject = stream;
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current
+            .play()
+            .then(() => {
+              const detectLoop = async () => {
+                if (!videoRef.current) return;
+
+                if (
+                  videoRef.current.videoWidth === 0 ||
+                  videoRef.current.videoHeight === 0
+                ) {
+                  requestAnimationFrame(detectLoop);
+                  return;
+                }
+
+                const predictions = await model.estimateFaces(videoRef.current, false);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let warning = "";
+                if (predictions.length > 0) {
+                  predictions.forEach((p) => {
+                    const [x1, y1] = p.topLeft;
+                    const [x2, y2] = p.bottomRight;
+                    ctx.strokeStyle = "lime";
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                  });
+
+                  if (predictions.length > 1) {
+                    warning = "⚠️ Multiple Faces Detected";
+                  }
+                } else {
+                  warning = "⚠️ No Face Detected";
+                }
+
+                if (warning) {
+                  setFaceWarning(warning);
+                  if (!faceTimeoutRef.current) {
+                    faceTimeoutRef.current = setTimeout(() => {
+                      addPenalty(warning);
+                      faceTimeoutRef.current = null;
+                    }, 2500); // wait 2.5s
+                  }
+                } else {
+                  setFaceWarning("");
+                  if (faceTimeoutRef.current) {
+                    clearTimeout(faceTimeoutRef.current);
+                    faceTimeoutRef.current = null;
+                  }
+                }
+
+                requestAnimationFrame(detectLoop);
+              };
+
+              detectLoop();
+            })
+            .catch((err) => console.error("Play error:", err));
+        };
+      } catch (err) {
+        console.error("❌ Camera error:", err);
+        setCamError("Unable to access camera. Check browser settings.");
+      }
+    };
+
+    init();
+
+    return () => {
+      if (videoRef.current?.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, []);
+
+  // ✅ Timer start
+  useEffect(() => {
+    if (interviewInfo) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      const start = Date.now();
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - start) / 1000));
+      }, 1000);
+    }
+  }, [interviewInfo]);
+
+  // ✅ Proctoring: Fullscreen + Keys + Tab Switch
+  useEffect(() => {
+    const onFsChange = () => {
+      const fsNow = isFsActive();
+      setIsFullscreen(fsNow);
+
+      if (!fsNow) {
+        addPenalty("⚠️ Fullscreen exited");
+        setBlocked(true);
+      } else {
+        setBlocked(false);
+      }
+    };
+
+    const onKeyDown = (e) => {
+      const key = e.key || "";
+      const ch = key.length === 1 ? key.toLowerCase() : key;
+      const ctrlLike = e.ctrlKey || e.metaKey;
+
+      if (
+        key === "Escape" ||
+        key === "F11" ||
+        key === "F12" ||
+        (ctrlLike && e.shiftKey && ["i", "j", "t", "n"].includes(ch)) ||
+        (ctrlLike && ["u", "c", "a", "n", "r", "v", "t"].includes(ch)) ||
+        (e.altKey && key === "F4") ||
+        e.metaKey
+      ) {
+        addPenalty("⚠️ Forbidden key press");
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      if (key === "PrintScreen") {
+        addPenalty("⚠️ Screenshot attempt");
+        navigator.clipboard.writeText("");
+      }
+    };
+
+    const disableContextMenu = (e) => {
+      e.preventDefault();
+      addPenalty("⚠️ Right-click disabled");
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        addPenalty("⚠️ Tab switch detected");
+      }
+    };
+
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("contextmenu", disableContextMenu);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("contextmenu", disableContextMenu);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
+
+  // ✅ Fullscreen helpers
+  const isFsActive = () =>
+    !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+  const tryRequestFs = async () => {
+    const el = document.documentElement;
+    try {
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+    } catch {}
+    setIsFullscreen(isFsActive());
+  };
+
+  // ✅ Main UI
+  return (
+    <div className="relative p-10 lg:px-48 xl:px-56">
+      {/* 🔴 Global warning banner */}
+      {lastPenaltyReason && (
+        <div
+          className={`w-full bg-red-500 text-white text-center py-2 mb-3 font-bold rounded transition-opacity duration-1500 ${
+            lastPenaltyReason ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {lastPenaltyReason}
+          <div className="text-sm font-normal mt-1">
+            Interview will revoke if more penalties are added {/*(Remaining:{" "}
+            {Math.max(0, 10 - penalty)})*/}
+          </div>
+        </div>
+      )}
+
+      <h2 className="font-bold text-xl flex justify-between">
+        AI Interview session
+        <span className="flex gap-6 items-center">
+          <span className="text-red-600 font-bold">Penalty: {penalty}</span>
+          <Timer /> {formatTime(elapsedTime)}
+        </span>
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5 ">
+        {/* AI Interviewer */}
+        <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+          <Image
+            src={"/avataar.jpg"}
+            alt="S-!Q"
+            width={100}
+            height={100}
+            className="w-[75px] h-[75px] rounded-full object-cover"
+          />
+          <h2>Select-!Q</h2>
+        </div>
+
+        {/* Candidate Camera */}
+        <div className="relative bg-white h-[400px] rounded-lg border overflow-hidden">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover rounded-lg bg-black"
+          />
+          <canvas
+            ref={canvasRef}
+            width="640"
+            height="480"
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+          />
+          {faceWarning && (
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded text-sm font-bold">
+              {faceWarning}
+            </div>
+          )}
+          <h2 className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+            {interviewInfo?.userName}
+          </h2>
+        </div>
+      </div>
+
+      <div className="flex justify-center items-center gap-7 mt-7">
+        <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+        <AlertConfirmation
+          stopInterview={() =>
+            stopInterview(
+              `/interview/${interviewInfo?.interviewData?.interview_id}/thankyou`
+            )
+          }
+        >
+          <Phone className="h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer" />
+        </AlertConfirmation>
+      </div>
+
+      <h2 className="text-sm text-gray-400 text-center mt-3">
+        Interview in Progress...
+      </h2>
+
+      {/* 🔒 Overlay when fullscreen is lost */}
+      {blocked && (
+        <div className="absolute inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-50">
+          <p className="mb-4 font-bold text-white">
+            ⚠️ Interview requires Fullscreen Mode. Penalties increase when leaving.
+          </p>
+          <h2 className="mb-4 font-bold text-white">Penalty: {penalty}</h2>
+          <button
+            onClick={tryRequestFs}
+            className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold text-white"
+          >
+            Re-Enter Fullscreen
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default StartInterview;

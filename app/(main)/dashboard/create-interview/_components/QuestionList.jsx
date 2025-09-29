@@ -318,7 +318,7 @@ function QuestionList({ formData, onCreateLink }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
-  const GenerateQuestionList = async () => {
+  const GenerateQuestionList = async() => {
     setLoading(true);
     try {
       const { data } = await axios.post("/api/ai-model", { ...formData });
